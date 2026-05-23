@@ -14,10 +14,14 @@ export default defineConfig({
   },
   vite: {
     server: {
-      // Proxies /api/* to Flask (chat_endpoint/server.py uses /api/chat, /api/health).
-      // Set VITE_CHAT_API_URL=/api/chat in .env when using this proxy.
+      // Proxy only the Flask chat endpoints — DO NOT catch /api/* broadly,
+      // otherwise TanStack server routes under /api/public/* are intercepted.
       proxy: {
-        "/api": {
+        "/api/chat": {
+          target: process.env.CHAT_API_PROXY_TARGET ?? "http://127.0.0.1:5000",
+          changeOrigin: true,
+        },
+        "/api/health": {
           target: process.env.CHAT_API_PROXY_TARGET ?? "http://127.0.0.1:5000",
           changeOrigin: true,
         },

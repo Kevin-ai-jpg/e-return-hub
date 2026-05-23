@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as SetupPasswordRouteImport } from './routes/setup-password'
-import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as P4PreviewRouteImport } from './routes/p4-preview'
 import { Route as P4PipelineRouteImport } from './routes/p4-pipeline'
@@ -20,6 +19,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectorRouteImport } from './routes/collector'
 import { Route as ApplyCollectorRouteImport } from './routes/apply-collector'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CollectorIndexRouteImport } from './routes/collector.index'
 import { Route as PickupOffersRouteImport } from './routes/pickup.offers'
@@ -30,6 +31,7 @@ import { Route as CollectorOffersRouteImport } from './routes/collector.offers'
 import { Route as CollectorDashboardRouteImport } from './routes/collector.dashboard'
 import { Route as CollectorCompanyRouteImport } from './routes/collector.company'
 import { Route as CollectorCampaignsRouteImport } from './routes/collector.campaigns'
+import { Route as ApiPublicVerifyCuiRouteImport } from './routes/api/public/verify-cui'
 
 const VouchersRoute = VouchersRouteImport.update({
   id: '/vouchers',
@@ -39,11 +41,6 @@ const VouchersRoute = VouchersRouteImport.update({
 const SetupPasswordRoute = SetupPasswordRouteImport.update({
   id: '/setup-password',
   path: '/setup-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -84,6 +81,16 @@ const CollectorRoute = CollectorRouteImport.update({
 const ApplyCollectorRoute = ApplyCollectorRouteImport.update({
   id: '/apply-collector',
   path: '/apply-collector',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -136,9 +143,16 @@ const CollectorCampaignsRoute = CollectorCampaignsRouteImport.update({
   path: '/campaigns',
   getParentRoute: () => CollectorRoute,
 } as any)
+const ApiPublicVerifyCuiRoute = ApiPublicVerifyCuiRouteImport.update({
+  id: '/api/public/verify-cui',
+  path: '/api/public/verify-cui',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
@@ -147,7 +161,6 @@ export interface FileRoutesByFullPath {
   '/p4-pipeline': typeof P4PipelineRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
-  '/settings': typeof SettingsRoute
   '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
   '/collector/campaigns': typeof CollectorCampaignsRoute
@@ -159,9 +172,12 @@ export interface FileRoutesByFullPath {
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
   '/collector/': typeof CollectorIndexRoute
+  '/api/public/verify-cui': typeof ApiPublicVerifyCuiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -169,7 +185,6 @@ export interface FileRoutesByTo {
   '/p4-pipeline': typeof P4PipelineRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
-  '/settings': typeof SettingsRoute
   '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
   '/collector/campaigns': typeof CollectorCampaignsRoute
@@ -181,10 +196,13 @@ export interface FileRoutesByTo {
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
   '/collector': typeof CollectorIndexRoute
+  '/api/public/verify-cui': typeof ApiPublicVerifyCuiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
@@ -193,7 +211,6 @@ export interface FileRoutesById {
   '/p4-pipeline': typeof P4PipelineRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
-  '/settings': typeof SettingsRoute
   '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
   '/collector/campaigns': typeof CollectorCampaignsRoute
@@ -205,11 +222,14 @@ export interface FileRoutesById {
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
   '/collector/': typeof CollectorIndexRoute
+  '/api/public/verify-cui': typeof ApiPublicVerifyCuiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
+    | '/admin'
     | '/apply-collector'
     | '/collector'
     | '/dashboard'
@@ -218,7 +238,6 @@ export interface FileRouteTypes {
     | '/p4-pipeline'
     | '/p4-preview'
     | '/register'
-    | '/settings'
     | '/setup-password'
     | '/vouchers'
     | '/collector/campaigns'
@@ -230,9 +249,12 @@ export interface FileRouteTypes {
     | '/pickup/new'
     | '/pickup/offers'
     | '/collector/'
+    | '/api/public/verify-cui'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
+    | '/admin'
     | '/apply-collector'
     | '/dashboard'
     | '/login'
@@ -240,7 +262,6 @@ export interface FileRouteTypes {
     | '/p4-pipeline'
     | '/p4-preview'
     | '/register'
-    | '/settings'
     | '/setup-password'
     | '/vouchers'
     | '/collector/campaigns'
@@ -252,9 +273,12 @@ export interface FileRouteTypes {
     | '/pickup/new'
     | '/pickup/offers'
     | '/collector'
+    | '/api/public/verify-cui'
   id:
     | '__root__'
     | '/'
+    | '/account'
+    | '/admin'
     | '/apply-collector'
     | '/collector'
     | '/dashboard'
@@ -263,7 +287,6 @@ export interface FileRouteTypes {
     | '/p4-pipeline'
     | '/p4-preview'
     | '/register'
-    | '/settings'
     | '/setup-password'
     | '/vouchers'
     | '/collector/campaigns'
@@ -275,10 +298,13 @@ export interface FileRouteTypes {
     | '/pickup/new'
     | '/pickup/offers'
     | '/collector/'
+    | '/api/public/verify-cui'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
+  AdminRoute: typeof AdminRoute
   ApplyCollectorRoute: typeof ApplyCollectorRoute
   CollectorRoute: typeof CollectorRouteWithChildren
   DashboardRoute: typeof DashboardRoute
@@ -287,11 +313,11 @@ export interface RootRouteChildren {
   P4PipelineRoute: typeof P4PipelineRoute
   P4PreviewRoute: typeof P4PreviewRoute
   RegisterRoute: typeof RegisterRoute
-  SettingsRoute: typeof SettingsRoute
   SetupPasswordRoute: typeof SetupPasswordRoute
   VouchersRoute: typeof VouchersRoute
   PickupNewRoute: typeof PickupNewRoute
   PickupOffersRoute: typeof PickupOffersRoute
+  ApiPublicVerifyCuiRoute: typeof ApiPublicVerifyCuiRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -308,13 +334,6 @@ declare module '@tanstack/react-router' {
       path: '/setup-password'
       fullPath: '/setup-password'
       preLoaderRoute: typeof SetupPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -371,6 +390,20 @@ declare module '@tanstack/react-router' {
       path: '/apply-collector'
       fullPath: '/apply-collector'
       preLoaderRoute: typeof ApplyCollectorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -443,6 +476,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectorCampaignsRouteImport
       parentRoute: typeof CollectorRoute
     }
+    '/api/public/verify-cui': {
+      id: '/api/public/verify-cui'
+      path: '/api/public/verify-cui'
+      fullPath: '/api/public/verify-cui'
+      preLoaderRoute: typeof ApiPublicVerifyCuiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -472,6 +512,8 @@ const CollectorRouteWithChildren = CollectorRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
+  AdminRoute: AdminRoute,
   ApplyCollectorRoute: ApplyCollectorRoute,
   CollectorRoute: CollectorRouteWithChildren,
   DashboardRoute: DashboardRoute,
@@ -480,11 +522,11 @@ const rootRouteChildren: RootRouteChildren = {
   P4PipelineRoute: P4PipelineRoute,
   P4PreviewRoute: P4PreviewRoute,
   RegisterRoute: RegisterRoute,
-  SettingsRoute: SettingsRoute,
   SetupPasswordRoute: SetupPasswordRoute,
   VouchersRoute: VouchersRoute,
   PickupNewRoute: PickupNewRoute,
   PickupOffersRoute: PickupOffersRoute,
+  ApiPublicVerifyCuiRoute: ApiPublicVerifyCuiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
