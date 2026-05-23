@@ -16,6 +16,19 @@ function Landing() {
     if (typeof window !== "undefined") setSiteUrl(window.location.origin);
   }, []);
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(siteUrl)}`;
+  const { data: partners = [] } = useQuery({
+    queryKey: ["landing-partners"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("collectors")
+        .select("id, company_name, logo_url")
+        .not("logo_url", "is", null)
+        .order("company_name");
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
   const features = [
     { icon: Recycle, title: t("landing.feature1.title"), desc: t("landing.feature1.desc") },
     { icon: Coins, title: t("landing.feature2.title"), desc: t("landing.feature2.desc") },
