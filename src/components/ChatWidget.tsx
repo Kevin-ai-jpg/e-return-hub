@@ -5,15 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MessageBubble, TypingDots, type ChatMessage } from "@/components/chat/MessageBubble";
 import { ChatComposer } from "@/components/chat/ChatComposer";
+import { useTranslation } from "@/i18n/LanguageProvider";
 
 const SESSION_KEY = "eReturn.chatSession";
 const WEBHOOK_URL = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL as string | undefined;
-
-const SUGGESTIONS = [
-  "Ce fac cu frigiderul vechi?",
-  "Câți lei primesc pentru un laptop?",
-  "Unde îl predau în Cluj?",
-];
 
 function getSessionId(): string {
   if (typeof window === "undefined") return "ssr";
