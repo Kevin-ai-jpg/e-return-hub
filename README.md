@@ -28,26 +28,25 @@ A floating AI chat widget (`src/components/ChatWidget.tsx`) is mounted globally 
 
 ### Chat API: `VITE_CHAT_API_URL` (Flask or n8n WF2)
 
-**Frontend POSTs** JSON:
+**Frontend POSTs** JSON (Flask contract):
 
 ```json
 {
-  "sessionId": "uuid",                // stable per browser tab
-  "userId": "uuid | null",            // supabase auth user id if logged in
-  "message": "user text",
-  "history": [
-    { "role": "user" | "assistant", "content": "..." }
-  ]
+  "sessionId": "uuid",
+  "userId": "uuid | null",
+  "chat_history": [{ "role": "user" | "assistant", "content": "..." }],
+  "fresh_text": "current user message"
 }
 ```
 
-**Frontend accepts** any of these response shapes (first non-null wins):
-`reply`, `output`, `message`, `text`, or a bare string. Markdown is rendered.
+**Flask returns** `{ "response": "...", "new_history_node": { ... } }`.
+
+**Frontend accepts** `response`, `reply`, `output`, `message`, `text`, or a bare string. Markdown is rendered.
 
 #### Local Flask (dev)
 
-1. Run Flask on `http://127.0.0.1:5000` with a `POST /chat` route that accepts the JSON above and returns `{ "reply": "..." }`.
-2. In `.env`, set `VITE_CHAT_API_URL=/api/chat` (Vite proxies `/api/chat` → `http://127.0.0.1:5000/chat`; override target with `CHAT_API_PROXY_TARGET`).
+1. Run Flask on `http://127.0.0.1:5000` (`python chat_endpoint/server.py`) — routes are `POST /api/chat` and `GET /api/health`.
+2. In `.env`, set `VITE_CHAT_API_URL=/api/chat` (Vite proxies `/api/*` → `http://127.0.0.1:5000/api/*`; override target with `CHAT_API_PROXY_TARGET`).
 3. Restart `bun run dev` after changing `.env`.
 
 If you call Flask directly (e.g. `VITE_CHAT_API_URL=http://127.0.0.1:5000/chat`), enable CORS on Flask for `http://localhost:8080` (or your dev origin).

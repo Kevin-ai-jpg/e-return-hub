@@ -20,9 +20,10 @@ def chat_endpoint():
     - fresh_image_base64: (Optional) Base64 encoded string of an uploaded image
     """
     data = request.get_json() or {}
-    
-    chat_history = data.get("chat_history", [])
-    fresh_text = data.get("fresh_text", None)
+
+    # Support Flask contract and legacy n8n-style frontend payloads.
+    chat_history = data.get("chat_history") or data.get("history") or []
+    fresh_text = data.get("fresh_text") or data.get("message")
     fresh_image_base64 = data.get("fresh_image_base64", None)
     media_type = data.get("media_type", "image/jpeg")
     

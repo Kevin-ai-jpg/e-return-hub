@@ -14,13 +14,12 @@ export default defineConfig({
   },
   vite: {
     server: {
-      // Proxies browser requests to a local Flask API (avoids CORS in dev).
+      // Proxies /api/* to Flask (chat_endpoint/server.py uses /api/chat, /api/health).
       // Set VITE_CHAT_API_URL=/api/chat in .env when using this proxy.
       proxy: {
-        "/api/chat": {
+        "/api": {
           target: process.env.CHAT_API_PROXY_TARGET ?? "http://127.0.0.1:5000",
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/chat/, "/chat"),
         },
       },
     },
