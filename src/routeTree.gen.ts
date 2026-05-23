@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as SetupPasswordRouteImport } from './routes/setup-password'
-import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as P4PreviewRouteImport } from './routes/p4-preview'
 import { Route as P4PipelineRouteImport } from './routes/p4-pipeline'
@@ -41,11 +40,6 @@ const VouchersRoute = VouchersRouteImport.update({
 const SetupPasswordRoute = SetupPasswordRouteImport.update({
   id: '/setup-password',
   path: '/setup-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -161,7 +155,6 @@ export interface FileRoutesByFullPath {
   '/p4-pipeline': typeof P4PipelineRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
-  '/settings': typeof SettingsRoute
   '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
   '/collector/campaigns': typeof CollectorCampaignsRoute
@@ -185,7 +178,6 @@ export interface FileRoutesByTo {
   '/p4-pipeline': typeof P4PipelineRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
-  '/settings': typeof SettingsRoute
   '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
   '/collector/campaigns': typeof CollectorCampaignsRoute
@@ -211,7 +203,6 @@ export interface FileRoutesById {
   '/p4-pipeline': typeof P4PipelineRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
-  '/settings': typeof SettingsRoute
   '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
   '/collector/campaigns': typeof CollectorCampaignsRoute
@@ -238,7 +229,6 @@ export interface FileRouteTypes {
     | '/p4-pipeline'
     | '/p4-preview'
     | '/register'
-    | '/settings'
     | '/setup-password'
     | '/vouchers'
     | '/collector/campaigns'
@@ -262,7 +252,6 @@ export interface FileRouteTypes {
     | '/p4-pipeline'
     | '/p4-preview'
     | '/register'
-    | '/settings'
     | '/setup-password'
     | '/vouchers'
     | '/collector/campaigns'
@@ -287,7 +276,6 @@ export interface FileRouteTypes {
     | '/p4-pipeline'
     | '/p4-preview'
     | '/register'
-    | '/settings'
     | '/setup-password'
     | '/vouchers'
     | '/collector/campaigns'
@@ -313,7 +301,6 @@ export interface RootRouteChildren {
   P4PipelineRoute: typeof P4PipelineRoute
   P4PreviewRoute: typeof P4PreviewRoute
   RegisterRoute: typeof RegisterRoute
-  SettingsRoute: typeof SettingsRoute
   SetupPasswordRoute: typeof SetupPasswordRoute
   VouchersRoute: typeof VouchersRoute
   PickupNewRoute: typeof PickupNewRoute
@@ -334,13 +321,6 @@ declare module '@tanstack/react-router' {
       path: '/setup-password'
       fullPath: '/setup-password'
       preLoaderRoute: typeof SetupPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -522,7 +502,6 @@ const rootRouteChildren: RootRouteChildren = {
   P4PipelineRoute: P4PipelineRoute,
   P4PreviewRoute: P4PreviewRoute,
   RegisterRoute: RegisterRoute,
-  SettingsRoute: SettingsRoute,
   SetupPasswordRoute: SetupPasswordRoute,
   VouchersRoute: VouchersRoute,
   PickupNewRoute: PickupNewRoute,
@@ -531,3 +510,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
