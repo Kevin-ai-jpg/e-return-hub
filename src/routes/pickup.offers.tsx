@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/i18n/LanguageProvider";
 
 type OffersSearch = {
   deeeType: string;
@@ -30,12 +31,6 @@ export const Route = createFileRoute("/pickup/offers")({
   head: () => ({ meta: [{ title: "Choose your offer — e-Return" }] }),
 });
 
-// Row shape from:
-// SELECT co.*, c.company_name, c.logo_url, c.rating
-// FROM collector_offers co
-// JOIN collectors c ON co.collector_id = c.id
-// WHERE co.deee_type = $1 AND $2 = ANY(c.service_area_counties)
-// ORDER BY co.voucher_value_lei DESC
 type OfferRow = {
   id: string;
   collector_id: string | null;
@@ -94,8 +89,9 @@ function StarRating({ value }: { value: number }) {
 }
 
 function PickupBadge({ acceptsHome }: { acceptsHome: boolean }) {
+  const { t } = useTranslation();
   const Icon = acceptsHome ? Home : MapPin;
-  const label = acceptsHome ? "Home pickup" : "Drop-off only";
+  const label = acceptsHome ? t("offers.homePickup") : t("offers.dropoff");
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary">
       <Icon className="h-3.5 w-3.5" /> {label}
@@ -125,6 +121,7 @@ function OfferCard({
 }: {
   offer: OfferRow; isBest: boolean; onSelect: () => void;
 }) {
+  const { t } = useTranslation();
   const company = offer.collectors;
   const rating = company?.rating ?? 0;
 
@@ -134,7 +131,7 @@ function OfferCard({
     }`}>
       {isBest && (
         <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary-foreground shadow-sm">
-          Best offer
+          {t("offers.best")}
         </span>
       )}
 
@@ -152,17 +149,17 @@ function OfferCard({
             {offer.voucher_value_lei}
             <span className="ml-1 text-base font-semibold text-muted-foreground">lei</span>
           </div>
-          <div className="mt-1 text-xs text-muted-foreground">Voucher value</div>
+          <div className="mt-1 text-xs text-muted-foreground">{t("offers.voucherValue")}</div>
         </div>
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <PickupBadge acceptsHome={offer.accepts_home_pickup ?? false} />
         <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary">
-          <CalendarIcon className="h-3.5 w-3.5" /> Earliest: in {offer.earliest_pickup_days ?? 1}d
+          <CalendarIcon className="h-3.5 w-3.5" /> {t("offers.earliestIn", { days: offer.earliest_pickup_days ?? 1 })}
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary">
-          <Truck className="h-3.5 w-3.5" /> Certified
+          <Truck className="h-3.5 w-3.5" /> {t("offers.certified")}
         </span>
       </div>
 
@@ -170,13 +167,14 @@ function OfferCard({
         onClick={onSelect}
         className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition hover:bg-primary"
       >
-        Select offer
+        {t("offers.select")}
       </button>
     </article>
   );
 }
 
 function OffersPanel() {
+  const { t } = useTranslation();
   const { deeeType, county, address } = Route.useSearch();
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortKey>("voucher");
@@ -223,21 +221,20 @@ function OffersPanel() {
       if (insertErr) throw new Error(insertErr.message);
     },
     onSuccess: () => {
-      toast.success("Pickup scheduled!", {
-        description: `${selectedOffer?.collectors?.company_name} will collect on ${
+      toast.success(t("offers.scheduled"), {
+        description: `${selectedOffer?.collectors?.company_name} • ${
           scheduledDate ? format(scheduledDate, "PPP") : ""
-        }.`,
+        }`,
       });
       setSelectedOffer(null);
       setScheduledDate(undefined);
       navigate({ to: "/dashboard" });
     },
     onError: (e: Error) => {
-      toast.error("Could not schedule pickup", { description: e.message });
+      toast.error(t("offers.couldNot"), { description: e.message });
     },
   });
 
-  // Default earliest date based on the selected offer's earliest_pickup_days
   const minDate = useMemo(() => {
     const d = new Date();
     const offset = selectedOffer?.earliest_pickup_days ?? 1;
@@ -249,37 +246,37 @@ function OffersPanel() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
       <Link to="/pickup/new" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Back
+        <ArrowLeft className="h-4 w-4" /> {t("offers.back")}
       </Link>
 
       <div className="mt-4 flex items-center gap-3 text-sm">
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground">
           <Check className="h-4 w-4" />
         </span>
-        <span className="text-muted-foreground">What & where</span>
+        <span className="text-muted-foreground">{t("pickup.step1")}</span>
         <div className="h-px flex-1 bg-primary/40" />
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">2</span>
-        <span className="font-medium text-foreground">Choose offer</span>
+        <span className="font-medium text-foreground">{t("pickup.step2")}</span>
       </div>
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Offers for your <span className="text-primary capitalize">{deeeType || "item"}</span>
+            {t("offers.titleFor")} <span className="text-primary capitalize">{deeeType || t("offers.itemFallback")}</span>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Collectors serving <span className="font-medium text-foreground">{county || "your area"}</span> are competing for your e-waste.
+            {t("offers.serving")} <span className="font-medium text-foreground">{county || t("offers.areaFallback")}</span> {t("offers.competing")}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-muted-foreground">Sort by</label>
+          <label className="text-xs font-medium text-muted-foreground">{t("offers.sortBy")}</label>
           <select
             value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           >
-            <option value="voucher">Highest voucher</option>
-            <option value="rating">Best rating</option>
-            <option value="earliest">Earliest pickup</option>
+            <option value="voucher">{t("offers.sort.voucher")}</option>
+            <option value="rating">{t("offers.sort.rating")}</option>
+            <option value="earliest">{t("offers.sort.earliest")}</option>
           </select>
         </div>
       </div>
@@ -287,26 +284,26 @@ function OffersPanel() {
       <div className="mt-8 space-y-5">
         {isLoading && (
           <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-card p-12 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Loading offers…
+            <Loader2 className="h-5 w-5 animate-spin" /> {t("offers.loading")}
           </div>
         )}
 
         {error && (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6">
-            <p className="text-sm font-medium text-destructive">Could not load offers.</p>
+            <p className="text-sm font-medium text-destructive">{t("offers.errorTitle")}</p>
             <p className="mt-1 text-xs text-muted-foreground">{(error as Error).message}</p>
-            <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>Try again</Button>
+            <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>{t("offers.tryAgain")}</Button>
           </div>
         )}
 
         {!isLoading && !error && sorted.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-            <p className="text-sm font-medium text-foreground">No offers found</p>
+            <p className="text-sm font-medium text-foreground">{t("offers.noneTitle")}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              No collectors serve {county} for {deeeType} yet. Try a different county or item.
+              {t("offers.noneHint", { county, deeeType })}
             </p>
             <Link to="/pickup/new" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
-              Change selection
+              {t("offers.changeSelection")}
             </Link>
           </div>
         )}
@@ -325,23 +322,22 @@ function OffersPanel() {
         ))}
       </div>
 
-      {/* Date picker dialog */}
       <Dialog
         open={!!selectedOffer}
         onOpenChange={(open) => { if (!open) { setSelectedOffer(null); setScheduledDate(undefined); } }}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Schedule your pickup</DialogTitle>
+            <DialogTitle>{t("offers.schedule")}</DialogTitle>
             <DialogDescription>
-              {selectedOffer?.collectors?.company_name} • {selectedOffer?.voucher_value_lei} lei voucher
+              {selectedOffer?.collectors?.company_name} • {selectedOffer?.voucher_value_lei} lei
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium text-foreground">Pick a date</p>
+            <p className="text-sm font-medium text-foreground">{t("offers.pickDate")}</p>
             <p className="text-xs text-muted-foreground">
-              Earliest available: in {selectedOffer?.earliest_pickup_days ?? 1} day(s).
+              {t("offers.earliestAvailable", { days: selectedOffer?.earliest_pickup_days ?? 1 })}
             </p>
             <div className="flex justify-center rounded-md border border-border">
               <Calendar
@@ -361,7 +357,7 @@ function OffersPanel() {
               onClick={() => { setSelectedOffer(null); setScheduledDate(undefined); }}
               disabled={bookMutation.isPending}
             >
-              Cancel
+              {t("offers.cancel")}
             </Button>
             <Button
               onClick={() => bookMutation.mutate()}
@@ -369,7 +365,7 @@ function OffersPanel() {
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {bookMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Confirm pickup
+              {t("offers.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>

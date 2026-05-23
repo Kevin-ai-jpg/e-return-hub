@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Package, Ticket, Leaf, ArrowRight, Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -20,7 +21,6 @@ type DashboardSummary = {
   }>;
 };
 
-// CO2 saved ≈ 3 kg per kg of e-waste recycled (rough industry estimate)
 const CO2_PER_KG = 3;
 
 async function loadSummary(): Promise<DashboardSummary> {
@@ -67,7 +67,7 @@ async function loadSummary(): Promise<DashboardSummary> {
   for (const p of pickups.slice(0, 3)) {
     recent.push({
       id: `p-${p.id}`,
-      label: `Pickup ${p.status ?? "scheduled"} — ${p.deee_type ?? "DEEE"}`,
+      label: `${p.deee_type ?? "DEEE"} — ${p.status ?? "scheduled"}`,
       date: new Date(p.created_at ?? Date.now()).toLocaleDateString(),
       status: p.status === "completed" ? "done" : "pending",
     });
@@ -75,7 +75,7 @@ async function loadSummary(): Promise<DashboardSummary> {
   for (const v of activeVouchers.slice(0, 2)) {
     recent.push({
       id: `v-${v.id}`,
-      label: `Voucher earned — ${v.value_lei ?? 0} lei`,
+      label: `Voucher — ${v.value_lei ?? 0} lei`,
       date: new Date(v.created_at ?? Date.now()).toLocaleDateString(),
       status: "active",
     });
@@ -113,6 +113,7 @@ function StatCard({
 }
 
 function Dashboard() {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard-summary"],
     queryFn: loadSummary,
@@ -129,57 +130,55 @@ function Dashboard() {
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome back</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Here's your recycling activity.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("dash.welcome")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("dash.subtitle")}</p>
         </div>
         <Link
           to="/pickup/new"
           className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
         >
-          <Plus className="h-4 w-4" /> New pickup
+          <Plus className="h-4 w-4" /> {t("dash.newPickup")}
         </Link>
       </div>
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           icon={Package}
-          label="Pending pickups"
+          label={t("dash.pending")}
           value={isLoading ? "—" : summary.pendingPickups}
-          hint="Awaiting collector confirmation"
+          hint={t("dash.pendingHint")}
         />
         <StatCard
           icon={Ticket}
-          label="Active vouchers"
+          label={t("dash.active")}
           value={isLoading ? "—" : `${summary.activeVouchers.totalLei} lei`}
-          hint={`${summary.activeVouchers.count} vouchers available`}
+          hint={t("dash.activeHint", { count: summary.activeVouchers.count })}
           accent
         />
         <StatCard
           icon={Leaf}
-          label="Eco-impact"
+          label={t("dash.eco")}
           value={isLoading ? "—" : `${summary.ecoImpact.kg} kg`}
-          hint={`~${summary.ecoImpact.co2Kg} kg CO₂ saved`}
+          hint={t("dash.ecoHint", { co2: summary.ecoImpact.co2Kg })}
         />
       </div>
 
       <section className="mt-10 rounded-xl border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="text-lg font-semibold text-foreground">Recent activity</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t("dash.recent")}</h2>
           <Link to="/vouchers" className="text-sm font-medium text-primary hover:underline inline-flex items-center gap-1">
-            View vouchers <ArrowRight className="h-3.5 w-3.5" />
+            {t("dash.viewVouchers")} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center px-6 py-10 text-sm text-muted-foreground">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading…
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("dash.loading")}
           </div>
         ) : summary.recentActivity.length === 0 ? (
           <div className="px-6 py-10 text-center">
-            <p className="text-sm font-medium text-foreground">No activity yet</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Start your first pickup to see it here.
-            </p>
+            <p className="text-sm font-medium text-foreground">{t("dash.noActivity")}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("dash.noActivityHint")}</p>
           </div>
         ) : (
           <ul className="divide-y divide-border">
