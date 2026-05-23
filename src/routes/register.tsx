@@ -8,14 +8,10 @@ export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
 
-type Role = "citizen" | "collector";
-
 function RegisterPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [role, setRole] = useState<Role>("citizen");
   const [name, setName] = useState("");
-  const [companyName, setCompanyName] = useState("");
   const [county, setCounty] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,9 +31,8 @@ function RegisterPage() {
         emailRedirectTo: window.location.origin,
         data: {
           name,
-          role,
+          role: "citizen",
           county: county || undefined,
-          company_name: role === "collector" ? companyName || name : undefined,
         },
       },
     });
@@ -53,7 +48,7 @@ function RegisterPage() {
         setError(profileErr instanceof Error ? profileErr.message : "Could not set up your profile.");
         return;
       }
-      navigate({ to: role === "collector" ? "/collector/dashboard" : "/dashboard" });
+      navigate({ to: "/dashboard" });
       return;
     }
     setInfo(t("auth.confirmEmail"));
@@ -69,21 +64,12 @@ function RegisterPage() {
         <h1 className="text-2xl font-bold text-foreground">{t("auth.create")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("auth.createDesc")}</p>
 
-        <div className="mt-5 grid grid-cols-2 gap-2 rounded-lg border border-border p-1">
-          {(["citizen", "collector"] as Role[]).map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRole(r)}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
-                role === r
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-secondary"
-              }`}
-            >
-              {r === "citizen" ? "Citizen" : "Collector"}
-            </button>
-          ))}
+        <div className="mt-4 rounded-lg border border-[#4CAF50]/30 bg-[#E8F5E9] p-3 text-xs text-[#1B5E20]">
+          Are you a collection company? Citizens sign up here. Collectors don't self-register —{" "}
+          <Link to="/apply-collector" className="font-semibold underline">
+            apply to become a partner
+          </Link>{" "}
+          and our team will set up your account.
         </div>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
@@ -91,17 +77,6 @@ function RegisterPage() {
             <label className="block text-sm font-medium text-foreground">{t("auth.fullName")}</label>
             <input required value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
           </div>
-          {role === "collector" && (
-            <div>
-              <label className="block text-sm font-medium text-foreground">Company name</label>
-              <input
-                required
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className={inputCls}
-              />
-            </div>
-          )}
           <div>
             <label className="block text-sm font-medium text-foreground">County</label>
             <input
