@@ -121,6 +121,42 @@ function Landing() {
         </div>
       </section>
 
+      {partners.length > 0 && (
+        <section className="border-t border-border bg-secondary/40">
+          <div className="mx-auto max-w-6xl px-4 py-16">
+            <div className="text-center">
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
+                {t("landing.partners.title")}
+              </h2>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+                {t("landing.partners.desc")}
+              </p>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {partners.map((p) => (
+                <div
+                  key={p.id}
+                  title={p.company_name}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-4 transition hover:border-accent hover:shadow-md"
+                >
+                  <img
+                    src={p.logo_url ?? ""}
+                    alt={p.company_name}
+                    loading="lazy"
+                    className="h-14 w-14 rounded-full object-cover"
+                  />
+                  <span className="line-clamp-2 text-center text-xs font-medium text-foreground">
+                    {p.company_name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+
+
       <section className="border-t border-border bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-10 sm:flex-row">
           <div className="flex items-center gap-3">
