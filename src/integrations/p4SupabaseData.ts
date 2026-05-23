@@ -55,14 +55,55 @@ function normalizePickupMethod(value: unknown): PickupMethod {
   return "dropoff";
 }
 
-function inferCountyFromAddress(address: string) {
-  const lower = address.toLowerCase();
+const COUNTY_PATTERNS: [RegExp, string][] = [
+  [/alba/i, "Alba"],
+  [/arad/i, "Arad"],
+  [/arge[sș]/i, "Argeș"],
+  [/bac[aă]u/i, "Bacău"],
+  [/bihor/i, "Bihor"],
+  [/bistri[tț]a|n[aă]s[aă]ud/i, "Bistrița-Năsăud"],
+  [/boto[sș]ani/i, "Botoșani"],
+  [/br[aă]ila/i, "Brăila"],
+  [/bra[sș]ov/i, "Brașov"],
+  [/bucure[sș]ti|bucurești/i, "București"],
+  [/buz[aă]u/i, "Buzău"],
+  [/c[aă]l[aă]ra[sș]i/i, "Călărași"],
+  [/cara[sș].severin|re[sș]i[tț]a|caransebe[sș]/i, "Caraș-Severin"],
+  [/cluj|napoca/i, "Cluj"],
+  [/constan[tț]a/i, "Constanța"],
+  [/covasna|sf[aâ]ntu gheorghe/i, "Covasna"],
+  [/d[aâ]mbovi[tț]a|t[aâ]rgovi[sș]te/i, "Dâmbovița"],
+  [/dolj|craiova/i, "Dolj"],
+  [/gala[tț]i/i, "Galați"],
+  [/giurgiu/i, "Giurgiu"],
+  [/gorj|t[aâ]rgu jiu/i, "Gorj"],
+  [/harghita|miercurea/i, "Harghita"],
+  [/hunedoara|deva|petro[sș]ani/i, "Hunedoara"],
+  [/ialomi[tț]a|slobozia/i, "Ialomița"],
+  [/ia[sș]i/i, "Iași"],
+  [/ilfov/i, "Ilfov"],
+  [/maramure[sș]|baia mare/i, "Maramureș"],
+  [/mehedin[tț]i|drobeta/i, "Mehedinți"],
+  [/mure[sș]|t[aâ]rgu mure[sș]/i, "Mureș"],
+  [/neam[tț]|piatra neam[tț]/i, "Neamț"],
+  [/olt|slatina/i, "Olt"],
+  [/prahova|ploie[sș]ti/i, "Prahova"],
+  [/s[aă]laj|zal[aă]u/i, "Sălaj"],
+  [/satu mare|carei/i, "Satu Mare"],
+  [/sibiu|hermannstadt/i, "Sibiu"],
+  [/suceava|f[aă]lticeni/i, "Suceava"],
+  [/teleorman|alexandria/i, "Teleorman"],
+  [/timi[sș]|timi[sș]oara/i, "Timiș"],
+  [/tulcea/i, "Tulcea"],
+  [/vaslui|b[aâ]rlad/i, "Vaslui"],
+  [/v[aâ]lcea|r[aâ]mnicu/i, "Vâlcea"],
+  [/vrancea|focsani|focșani/i, "Vrancea"],
+];
 
-  if (lower.includes("cluj")) return "Cluj";
-  if (lower.includes("satu mare")) return "Satu Mare";
-  if (lower.includes("timiș") || lower.includes("timis")) return "Timiș";
-  if (lower.includes("bihor")) return "Bihor";
-
+function inferCountyFromAddress(address: string): string {
+  for (const [pattern, county] of COUNTY_PATTERNS) {
+    if (pattern.test(address)) return county;
+  }
   return "Unknown";
 }
 
@@ -183,15 +224,17 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
     pickupRequestsResult,
     vouchersResult,
     collectorsResult,
+    usersResult,
   ] = await Promise.all([
     supabase
       .from("collections")
       .select("id, pickup_request_id, confirmed_at, kg_collected"),
     supabase
       .from("pickup_requests")
-      .select("id, collector_id, address, status, created_at"),
+      .select("id, collector_id, address, status, created_at, user_id"),
     supabase.from("vouchers").select("id, value_lei, status, created_at"),
     supabase.from("collectors").select("id, company_name, rating"),
+    supabase.from("users").select("id, county"),
   ]);
 
   if (collectionsResult.error) {
@@ -213,6 +256,12 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
   const pickupRequests = (pickupRequestsResult.data ?? []) as DbRow[];
   const vouchers = (vouchersResult.data ?? []) as DbRow[];
   const collectors = (collectorsResult.data ?? []) as DbRow[];
+  const users = (usersResult.data ?? []) as DbRow[];
+
+  const userCountyById = new Map<string, string>();
+  users.forEach((u) => {
+    if (u.id && u.county) userCountyById.set(toString(u.id), toString(u.county));
+  });
 
   const pickupRequestById = new Map<string, DbRow>();
 
@@ -241,8 +290,11 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
       toString(collection.pickup_request_id),
     );
 
+    const userId = toString(pickupRequest?.user_id);
+    const countyFromUser = userCountyById.get(userId) ?? "";
     const address = toString(pickupRequest?.address);
-    const county = inferCountyFromAddress(address);
+    const county =
+      countyFromUser || inferCountyFromAddress(address) || "Unknown";
 
     const existingCounty = countyMap.get(county) ?? {
       county,
