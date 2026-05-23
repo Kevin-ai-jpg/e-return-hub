@@ -9,6 +9,11 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const { t } = useTranslation();
+  const [siteUrl, setSiteUrl] = useState("https://e-return.app");
+  useEffect(() => {
+    if (typeof window !== "undefined") setSiteUrl(window.location.origin);
+  }, []);
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(siteUrl)}`;
   const features = [
     { icon: Recycle, title: t("landing.feature1.title"), desc: t("landing.feature1.desc") },
     { icon: Coins, title: t("landing.feature2.title"), desc: t("landing.feature2.desc") },
