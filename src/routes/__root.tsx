@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { ChatWidget } from "@/components/ChatWidget";
+import { LanguageProvider, useTranslation } from "@/i18n/LanguageProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 import appCss from "../styles.css?url";
 
@@ -84,6 +86,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function Nav() {
+  const { t } = useTranslation();
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -91,22 +94,25 @@ function Nav() {
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold">e</div>
           <span className="text-lg font-semibold tracking-tight text-foreground">e-Return</span>
         </Link>
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-1.5">
           <Link to="/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
-            Dashboard
+            {t("nav.dashboard")}
           </Link>
           <Link to="/vouchers" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
-            Vouchers
+            {t("nav.vouchers")}
           </Link>
           <Link to="/collector" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
-            Collector
+            {t("nav.collector")}
           </Link>
           <Link to="/login" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
-            Login
+            {t("nav.login")}
           </Link>
           <Link to="/register" className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-            Sign up
+            {t("nav.signup")}
           </Link>
+          <div className="ml-2">
+            <LanguageSwitcher />
+          </div>
         </nav>
       </div>
     </header>
@@ -117,12 +123,14 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground">
-        <Nav />
-        <Outlet />
-      </div>
-      <ChatWidget />
-      <Toaster />
+      <LanguageProvider>
+        <div className="min-h-screen bg-background text-foreground">
+          <Nav />
+          <Outlet />
+        </div>
+        <ChatWidget />
+        <Toaster />
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
