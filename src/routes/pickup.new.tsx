@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Smartphone, Laptop, Tv, Refrigerator, ArrowRight, ArrowLeft } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageProvider";
+import { CollectionMap } from "@/integrations/CollectionMap";
 
 export const Route = createFileRoute("/pickup/new")({
   component: NewPickup,
@@ -116,6 +117,10 @@ function NewPickup() {
             {t("pickup.seeOffers")} <ArrowRight className="h-4 w-4" />
           </button>
         </form>
+      </div>
+
+      <div className="mt-8">
+        <CollectionMap selectedDeeeType={deeeType || "all"} height="380px" />
       </div>
     </main>
   );
