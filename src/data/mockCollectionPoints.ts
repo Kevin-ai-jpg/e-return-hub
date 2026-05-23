@@ -2,6 +2,7 @@ export type PickupMethod = "home" | "dropoff" | "both";
 
 export type CollectionPoint = {
   id: string;
+  collectorId?: string | null;
   name: string;
   companyName: string;
   companyColor: string;

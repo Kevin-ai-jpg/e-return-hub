@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/LanguageProvider";
 import { ensureUserProfile } from "@/lib/ensureUserProfile";
+import type { CollectionPoint } from "@/data/mockCollectionPoints";
 
 type OffersSearch = {
   deeeType: string;
@@ -118,18 +119,25 @@ function CompanyAvatar({ name, logoUrl }: { name: string; logoUrl: string | null
 }
 
 function OfferCard({
-  offer, isBest, onSelect,
+  offer, isBest, highlighted, onSelect,
 }: {
-  offer: OfferRow; isBest: boolean; onSelect: () => void;
+  offer: OfferRow; isBest: boolean; highlighted?: boolean; onSelect: () => void;
 }) {
   const { t } = useTranslation();
   const company = offer.collectors;
   const rating = company?.rating ?? 0;
 
   return (
-    <article className={`relative rounded-2xl border-2 bg-card p-6 transition hover:shadow-md ${
-      isBest ? "border-primary/40" : "border-border hover:border-accent"
-    }`}>
+    <article
+      id={offer.collector_id ? `offer-${offer.collector_id}` : undefined}
+      className={`relative rounded-2xl border-2 bg-card p-6 transition hover:shadow-md ${
+        highlighted
+          ? "border-primary ring-4 ring-primary/30"
+          : isBest
+            ? "border-primary/40"
+            : "border-border hover:border-accent"
+      }`}
+    >
       {isBest && (
         <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary-foreground shadow-sm">
           {t("offers.best")}
@@ -181,6 +189,38 @@ function OffersPanel() {
   const [sortBy, setSortBy] = useState<SortKey>("voucher");
   const [selectedOffer, setSelectedOffer] = useState<OfferRow | null>(null);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [highlightedCollectorId, setHighlightedCollectorId] = useState<string | null>(null);
+  const [CollectionMap, setCollectionMap] = useState<ComponentType<{
+    selectedDeeeType?: string;
+    height?: string;
+    onPointClick?: (point: CollectionPoint) => void;
+  }> | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    import("@/integrations/CollectionMap")
+      .then((m) => { if (mounted) setCollectionMap(() => m.CollectionMap); })
+      .catch((e) => console.error("Failed to load map:", e));
+    return () => { mounted = false; };
+  }, []);
+
+  const handlePointClick = (point: CollectionPoint) => {
+    const cid = point.collectorId;
+    if (!cid) {
+      toast.info("This collection point isn't linked to an offer yet.");
+      return;
+    }
+    const match = (data ?? []).find((o) => o.collector_id === cid);
+    if (!match) {
+      toast.info(`No matching offer from ${point.companyName} for this DEEE type.`);
+      return;
+    }
+    setHighlightedCollectorId(cid);
+    setTimeout(() => {
+      document.getElementById(`offer-${cid}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 0);
+    setTimeout(() => setHighlightedCollectorId(null), 2500);
+  };
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["offers", deeeType, county],
@@ -262,6 +302,20 @@ function OffersPanel() {
         <span className="font-medium text-foreground">{t("pickup.step2")}</span>
       </div>
 
+      <div className="mt-6">
+        {CollectionMap ? (
+          <CollectionMap
+            selectedDeeeType={deeeType || "all"}
+            height="380px"
+            onPointClick={handlePointClick}
+          />
+        ) : (
+          <div className="flex h-[380px] items-center justify-center rounded-2xl border border-border bg-card text-sm text-muted-foreground">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading map…
+          </div>
+        )}
+      </div>
+
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -315,6 +369,7 @@ function OffersPanel() {
           <OfferCard
             key={offer.id} offer={offer}
             isBest={offer.id === bestId}
+            highlighted={!!offer.collector_id && offer.collector_id === highlightedCollectorId}
             onSelect={() => {
               setSelectedOffer(offer);
               const d = new Date();

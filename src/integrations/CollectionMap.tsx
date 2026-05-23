@@ -17,6 +17,7 @@ type CollectionMapProps = {
   selectedDeeeType?: string;
   height?: string;
   useSupabaseData?: boolean;
+  onPointClick?: (point: CollectionPoint) => void;
 };
 
 function createCompanyIcon(color: string) {
@@ -48,6 +49,7 @@ export function CollectionMap({
   selectedDeeeType = "all",
   height = "420px",
   useSupabaseData = true,
+  onPointClick,
 }: CollectionMapProps) {
   const [loadState, setLoadState] = useState<LoadState>(
     points ? { status: "ok", points } : { status: "loading" },
@@ -132,9 +134,17 @@ export function CollectionMap({
               <Popup>
                 <div className="min-w-[220px] space-y-2">
                   <div>
-                    <p className="text-base font-bold text-green-900">
-                      {point.name}
-                    </p>
+                    {onPointClick ? (
+                      <button
+                        type="button"
+                        onClick={() => onPointClick(point)}
+                        className="text-left text-base font-bold text-green-900 hover:underline"
+                      >
+                        {point.name}
+                      </button>
+                    ) : (
+                      <p className="text-base font-bold text-green-900">{point.name}</p>
+                    )}
                     <p className="text-sm font-medium text-gray-700">
                       {point.companyName}
                     </p>
@@ -175,6 +185,16 @@ export function CollectionMap({
                       ))}
                     </div>
                   </div>
+
+                  {onPointClick && (
+                    <button
+                      type="button"
+                      onClick={() => onPointClick(point)}
+                      className="mt-2 w-full rounded-md bg-green-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-800"
+                    >
+                      View this collector's offer →
+                    </button>
+                  )}
                 </div>
               </Popup>
             </Marker>
@@ -183,25 +203,31 @@ export function CollectionMap({
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
-        {filteredPoints.map((point) => (
-          <div
-            key={point.id}
-            className="rounded-xl border border-green-100 bg-green-50/50 p-3"
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className="h-3 w-3 rounded-full"
-                style={{ backgroundColor: point.companyColor }}
-              />
-              <p className="font-semibold text-green-900">{point.name}</p>
-            </div>
-            <p className="mt-1 text-sm text-gray-600">{point.address}</p>
-            <p className="mt-1 text-sm text-gray-700">
-              {formatPickupMethod(point.pickupMethods)} · ⭐{" "}
-              {point.rating.toFixed(1)}
-            </p>
-          </div>
-        ))}
+        {filteredPoints.map((point) => {
+          const clickable = Boolean(onPointClick);
+          const cardClass = `rounded-xl border border-green-100 bg-green-50/50 p-3 text-left ${
+            clickable ? "cursor-pointer transition hover:border-green-300 hover:bg-green-100/60" : ""
+          }`;
+          const inner = (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: point.companyColor }} />
+                <p className="font-semibold text-green-900">{point.name}</p>
+              </div>
+              <p className="mt-1 text-sm text-gray-600">{point.address}</p>
+              <p className="mt-1 text-sm text-gray-700">
+                {formatPickupMethod(point.pickupMethods)} · ⭐ {point.rating.toFixed(1)}
+              </p>
+            </>
+          );
+          return clickable ? (
+            <button key={point.id} type="button" onClick={() => onPointClick!(point)} className={cardClass}>
+              {inner}
+            </button>
+          ) : (
+            <div key={point.id} className={cardClass}>{inner}</div>
+          );
+        })}
       </div>
     </section>
   );
