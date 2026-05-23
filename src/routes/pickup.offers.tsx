@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/LanguageProvider";
+import { ensureUserProfile } from "@/lib/ensureUserProfile";
 
 type OffersSearch = {
   deeeType: string;
@@ -208,6 +209,8 @@ function OffersPanel() {
       if (!selectedOffer || !scheduledDate) throw new Error("Missing offer or date");
       const { data: userData, error: userErr } = await supabase.auth.getUser();
       if (userErr || !userData.user) throw new Error("You must be logged in to schedule a pickup.");
+
+      await ensureUserProfile(userData.user);
 
       const { error: insertErr } = await supabase.from("pickup_requests").insert({
         user_id: userData.user.id,

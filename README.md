@@ -14,7 +14,7 @@ Citizen-facing web app for Romania's e-waste (DEEE) marketplace. Built with TanS
 | `/vouchers` | Citizen voucher wallet | `vouchers` |
 | `/collector` | Collector view of pending pickups + confirm form | `pickup_requests`, `collections` |
 
-A floating AI chat widget (`src/components/ChatWidget.tsx`) is mounted globally in `src/routes/__root.tsx` and posts to the n8n webhook.
+A floating AI chat widget (`src/components/ChatWidget.tsx`) is mounted globally in `src/routes/__root.tsx` and POSTs to a chat API (Flask locally, or n8n webhook in production).
 
 ## Frontend ↔ Backend contract
 
@@ -23,9 +23,10 @@ A floating AI chat widget (`src/components/ChatWidget.tsx`) is mounted globally 
 | Var | Used by | Notes |
 |---|---|---|
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase client | already wired |
-| `VITE_N8N_CHAT_WEBHOOK_URL` | Chat widget | publishable; n8n Production webhook URL |
+| `VITE_CHAT_API_URL` | Chat widget | publishable; Flask or n8n chat endpoint |
+| `VITE_N8N_CHAT_WEBHOOK_URL` | Chat widget (fallback) | optional; used only if `VITE_CHAT_API_URL` is unset |
 
-### n8n: `VITE_N8N_CHAT_WEBHOOK_URL` (WF2 — AI Chat)
+### Chat API: `VITE_CHAT_API_URL` (Flask or n8n WF2)
 
 **Frontend POSTs** JSON:
 
@@ -42,6 +43,34 @@ A floating AI chat widget (`src/components/ChatWidget.tsx`) is mounted globally 
 
 **Frontend accepts** any of these response shapes (first non-null wins):
 `reply`, `output`, `message`, `text`, or a bare string. Markdown is rendered.
+
+#### Local Flask (dev)
+
+1. Run Flask on `http://127.0.0.1:5000` with a `POST /chat` route that accepts the JSON above and returns `{ "reply": "..." }`.
+2. In `.env`, set `VITE_CHAT_API_URL=/api/chat` (Vite proxies `/api/chat` → `http://127.0.0.1:5000/chat`; override target with `CHAT_API_PROXY_TARGET`).
+3. Restart `bun run dev` after changing `.env`.
+
+If you call Flask directly (e.g. `VITE_CHAT_API_URL=http://127.0.0.1:5000/chat`), enable CORS on Flask for `http://localhost:8080` (or your dev origin).
+
+Minimal Flask example:
+
+```python
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app, origins=["http://localhost:8080"])  # only needed without Vite proxy
+
+@app.post("/chat")
+def chat():
+    body = request.get_json(force=True)
+    # body: sessionId, userId, message, history
+    reply = f"You said: {body.get('message', '')}"
+    return jsonify({"reply": reply})
+
+if __name__ == "__main__":
+    app.run(port=5000, debug=True)
+```
 
 ### Supabase tables consumed by the frontend
 

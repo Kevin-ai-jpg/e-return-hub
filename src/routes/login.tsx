@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/i18n/LanguageProvider";
+import { ensureUserProfile } from "@/lib/ensureUserProfile";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -10,19 +12,37 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!authLoading && user) navigate({ to: "/dashboard" });
+  }, [authLoading, user, navigate]);
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoading(false);
+      setError(error.message);
+      return;
+    }
+    if (data.user) {
+      try {
+        await ensureUserProfile(data.user);
+      } catch (profileErr) {
+        setLoading(false);
+        setError(profileErr instanceof Error ? profileErr.message : "Could not set up your profile.");
+        return;
+      }
+    }
     setLoading(false);
-    if (error) setError(error.message);
-    else navigate({ to: "/" });
+    navigate({ to: "/dashboard" });
   };
 
   return (

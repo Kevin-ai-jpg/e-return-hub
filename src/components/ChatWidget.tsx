@@ -8,7 +8,10 @@ import { ChatComposer } from "@/components/chat/ChatComposer";
 import { useTranslation } from "@/i18n/LanguageProvider";
 
 const SESSION_KEY = "eReturn.chatSession";
-const WEBHOOK_URL = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL as string | undefined;
+/** Flask/local API or legacy n8n webhook — same POST contract. */
+const CHAT_API_URL = (
+  import.meta.env.VITE_CHAT_API_URL ?? import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL
+) as string | undefined;
 
 function getSessionId(): string {
   if (typeof window === "undefined") return "ssr";
@@ -51,14 +54,14 @@ export function ChatWidget() {
     setPending(true);
 
     try {
-      if (!WEBHOOK_URL) {
-        throw new Error("Chat webhook is not configured (VITE_N8N_CHAT_WEBHOOK_URL).");
+      if (!CHAT_API_URL) {
+        throw new Error("Chat API is not configured (set VITE_CHAT_API_URL in .env).");
       }
 
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData?.user?.id ?? null;
 
-      const resp = await fetch(WEBHOOK_URL, {
+      const resp = await fetch(CHAT_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
