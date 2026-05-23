@@ -201,34 +201,6 @@ export function CollectionMap({
           ))}
         </MapContainer>
       </div>
-
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        {filteredPoints.map((point) => {
-          const clickable = Boolean(onPointClick);
-          const cardClass = `rounded-xl border border-green-100 bg-green-50/50 p-3 text-left ${
-            clickable ? "cursor-pointer transition hover:border-green-300 hover:bg-green-100/60" : ""
-          }`;
-          const inner = (
-            <>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: point.companyColor }} />
-                <p className="font-semibold text-green-900">{point.name}</p>
-              </div>
-              <p className="mt-1 text-sm text-gray-600">{point.address}</p>
-              <p className="mt-1 text-sm text-gray-700">
-                {formatPickupMethod(point.pickupMethods)} · ⭐ {point.rating.toFixed(1)}
-              </p>
-            </>
-          );
-          return clickable ? (
-            <button key={point.id} type="button" onClick={() => onPointClick!(point)} className={cardClass}>
-              {inner}
-            </button>
-          ) : (
-            <div key={point.id} className={cardClass}>{inner}</div>
-          );
-        })}
-      </div>
     </section>
   );
 }
