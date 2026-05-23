@@ -17,6 +17,7 @@ type CollectionMapProps = {
   selectedDeeeType?: string;
   height?: string;
   useSupabaseData?: boolean;
+  onPointClick?: (point: CollectionPoint) => void;
 };
 
 function createCompanyIcon(color: string) {
