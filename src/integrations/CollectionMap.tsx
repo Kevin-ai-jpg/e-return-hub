@@ -134,9 +134,17 @@ export function CollectionMap({
               <Popup>
                 <div className="min-w-[220px] space-y-2">
                   <div>
-                    <p className="text-base font-bold text-green-900">
-                      {point.name}
-                    </p>
+                    {onPointClick ? (
+                      <button
+                        type="button"
+                        onClick={() => onPointClick(point)}
+                        className="text-left text-base font-bold text-green-900 hover:underline"
+                      >
+                        {point.name}
+                      </button>
+                    ) : (
+                      <p className="text-base font-bold text-green-900">{point.name}</p>
+                    )}
                     <p className="text-sm font-medium text-gray-700">
                       {point.companyName}
                     </p>
