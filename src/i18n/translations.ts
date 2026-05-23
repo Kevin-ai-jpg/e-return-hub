@@ -333,6 +333,8 @@ export const translations: Record<Lang, Dict> = {
     "landing.map.desc": "Explorează locațiile DEEE autorizate din toată România.",
     "landing.qr.title": "Deschide pe telefon",
     "landing.qr.desc": "Scanează codul QR pentru a deschide e-Return pe mobil și a programa o ridicare în câteva secunde.",
+    "landing.partners.title": "Partenerii noștri certificați",
+    "landing.partners.desc": "Colectori DEEE autorizați care operează în toată România.",
 
     // Auth
     "auth.welcomeBack": "Bine ai revenit",
