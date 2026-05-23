@@ -183,21 +183,27 @@ function Dashboard() {
           </div>
         ) : (
           <ul className="divide-y divide-border">
-            {summary.recentActivity.map((item) => (
-              <li key={item.id} className="flex items-center justify-between px-6 py-4">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{item.label}</p>
-                  <p className="text-xs text-muted-foreground">{item.date}</p>
-                </div>
-                <span className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${
-                  item.status === "pending" ? "bg-accent/15 text-primary"
-                  : item.status === "active" ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground"
-                }`}>
-                  {item.status}
-                </span>
-              </li>
-            ))}
+            {summary.recentActivity.map((item) => {
+              const badge =
+                item.status === "pending"
+                  ? { cls: "bg-amber-100 text-amber-800", label: "🟡 Așteptare colector" }
+                  : item.status === "accepted"
+                    ? { cls: "bg-blue-100 text-blue-800", label: "🔵 Programat" }
+                    : item.status === "completed"
+                      ? { cls: "bg-emerald-100 text-emerald-800", label: "🟢 Ridicat — voucher generat" }
+                      : { cls: "bg-primary text-primary-foreground", label: "Voucher activ" };
+              return (
+                <li key={item.id} className="flex items-center justify-between px-6 py-4">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.date}</p>
+                  </div>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.cls}`}>
+                    {badge.label}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
