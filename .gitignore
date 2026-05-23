@@ -1,4 +1,6 @@
-# Logs
+# ==========================================
+# 1. LOGS & DEBUGGING
+# ==========================================
 logs
 *.log
 npm-debug.log*
@@ -6,31 +8,83 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+pip-log.txt
 
-node_modules
-dist
-dist-ssr
-.output
-.vinxi
-.tanstack/**
-.nitro
+# ==========================================
+# 2. LOVABLE / FRONTEND (Node, Vite, Bun)
+# ==========================================
+node_modules/
+dist/
+dist-ssr/
+.output/
+.vinxi/
+.tanstack/
+.nitro/
+out/
+.next/
+
+# Package manager lockfiles (as requested)
+*.lock
+*.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Local overrides
 *.local
 
-# Wrangler / Cloudflare
-.wrangler/
-.dev.vars
+# ==========================================
+# 3. PYTHON / FLASK (Backend)
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.htmlcov/
+.tox/
+.coverage
+.coverage.*
+instance/
 
-# Editor directories and files
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# ==========================================
+# 4. SUPABASE / DATABASE
+# ==========================================
+.supabase/functions/.env
+supabase/.netlify/
+supabase/functions/**/.env
+
+# ==========================================
+# 5. ENVIRONMENT / SECURITY (Crucial)
+# ==========================================
+.env
+.env.*
+!.env.example
+secrets.toml
+
+# ==========================================
+# 6. IDEs, EDITORS & SYSTEM FILES
+# ==========================================
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+!.vscode/settings.json
+!.vscode/launch.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.DS_Store
+Thumbs.db
 
-.env
-
-.venv
+# ==========================================
+# 7. WRANGLER / CLOUDFLARE
+# ==========================================
+.wrangler/
+.dev.vars

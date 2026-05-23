@@ -35,6 +35,10 @@ export const translations: Record<Lang, Dict> = {
     "landing.compliance":
       "Compliant with Romanian DEEE regulations · Certified collectors only",
     "landing.cta.strip": "Start recycling",
+    "landing.map.title": "Find a collection point near you",
+    "landing.map.desc": "Browse certified DEEE drop-off locations across Romania.",
+    "landing.qr.title": "Open on your phone",
+    "landing.qr.desc": "Scan the QR code to launch e-Return on mobile and start a pickup in seconds.",
 
     // Auth
     "auth.welcomeBack": "Welcome back",
@@ -287,6 +291,10 @@ export const translations: Record<Lang, Dict> = {
     "landing.compliance":
       "Conform reglementărilor DEEE din România · Numai colectori autorizați",
     "landing.cta.strip": "Începe să reciclezi",
+    "landing.map.title": "Găsește un punct de colectare",
+    "landing.map.desc": "Explorează locațiile DEEE autorizate din toată România.",
+    "landing.qr.title": "Deschide pe telefon",
+    "landing.qr.desc": "Scanează codul QR pentru a deschide e-Return pe mobil și a programa o ridicare în câteva secunde.",
 
     // Auth
     "auth.welcomeBack": "Bine ai revenit",

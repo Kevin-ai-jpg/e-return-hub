@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Recycle, Coins, Shield, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Recycle, Coins, Shield, MapPin, QrCode } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/")({
@@ -8,6 +9,11 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const { t } = useTranslation();
+  const [siteUrl, setSiteUrl] = useState("https://e-return.app");
+  useEffect(() => {
+    if (typeof window !== "undefined") setSiteUrl(window.location.origin);
+  }, []);
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(siteUrl)}`;
   const features = [
     { icon: Recycle, title: t("landing.feature1.title"), desc: t("landing.feature1.desc") },
     { icon: Coins, title: t("landing.feature2.title"), desc: t("landing.feature2.desc") },
@@ -54,6 +60,40 @@ function Landing() {
               <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-20">
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <div className="flex items-center gap-2 border-b border-border px-5 py-4">
+              <MapPin className="h-5 w-5 text-primary" />
+              <div>
+                <h3 className="text-base font-semibold text-foreground">{t("landing.map.title")}</h3>
+                <p className="text-xs text-muted-foreground">{t("landing.map.desc")}</p>
+              </div>
+            </div>
+            <iframe
+              title="Romania collection points map"
+              className="block h-[360px] w-full border-0"
+              loading="lazy"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=20.2%2C43.6%2C29.7%2C48.3&layer=mapnik"
+            />
+          </div>
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
+            <div className="mb-3 flex items-center gap-2 text-primary">
+              <QrCode className="h-5 w-5" />
+              <h3 className="text-base font-semibold text-foreground">{t("landing.qr.title")}</h3>
+            </div>
+            <img
+              src={qrSrc}
+              alt="QR code linking to e-Return"
+              width={220}
+              height={220}
+              className="rounded-lg border border-border bg-background p-2"
+            />
+            <p className="mt-4 text-sm text-muted-foreground">{t("landing.qr.desc")}</p>
+          </div>
         </div>
       </section>
 
