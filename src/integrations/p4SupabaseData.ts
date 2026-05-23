@@ -209,16 +209,6 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
   if (collectorsResult.error) {
     throw new Error(collectorsResult.error.message);
   }
-  console.log("P4 dashboard Supabase raw results:", {
-  collections: collectionsResult.data,
-  collectionsError: collectionsResult.error,
-  pickupRequests: pickupRequestsResult.data,
-  pickupRequestsError: pickupRequestsResult.error,
-  vouchers: vouchersResult.data,
-  vouchersError: vouchersResult.error,
-  collectors: collectorsResult.data,
-  collectorsError: collectorsResult.error,
-});
   const collections = (collectionsResult.data ?? []) as DbRow[];
   const pickupRequests = (pickupRequestsResult.data ?? []) as DbRow[];
   const vouchers = (vouchersResult.data ?? []) as DbRow[];

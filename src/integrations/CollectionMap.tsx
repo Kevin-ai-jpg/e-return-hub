@@ -5,10 +5,12 @@ import { useEffect, useState } from "react";
 import { fetchCollectionPointsFromSupabase } from "./p4SupabaseData";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { Clock, MapPin, Recycle, Star } from "lucide-react";
-import {
-  CollectionPoint,
-  mockCollectionPoints,
-} from "../data/mockCollectionPoints";
+import { CollectionPoint } from "../data/mockCollectionPoints";
+
+type LoadState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ok"; points: CollectionPoint[] };
 
 type CollectionMapProps = {
   points?: CollectionPoint[];
@@ -47,65 +49,38 @@ export function CollectionMap({
   height = "420px",
   useSupabaseData = true,
 }: CollectionMapProps) {
-  const [livePoints, setLivePoints] =
-    useState<CollectionPoint[]>(mockCollectionPoints);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadState, setLoadState] = useState<LoadState>(
+    points ? { status: "ok", points } : { status: "loading" },
+  );
 
   useEffect(() => {
     if (!useSupabaseData || points) return;
 
     let isMounted = true;
+    setLoadState({ status: "loading" });
 
-    async function loadPoints() {
-      try {
-        setIsLoading(true);
-        setLoadError(null);
-
-        const supabasePoints = await fetchCollectionPointsFromSupabase();
-
-        console.log("P4 Supabase collection points:", supabasePoints);
-
-        if (!isMounted) return;
-
-        if (supabasePoints.length > 0) {
-          setLivePoints(supabasePoints);
-        } else {
-          setLivePoints(mockCollectionPoints);
-          setLoadError("No Supabase collection points found. Showing mock data.");
-        }
-      } catch (err) {
-        console.error("Failed to load collection points from Supabase:", err);
-
-        if (!isMounted) return;
-
-        setLivePoints(mockCollectionPoints);
-        setLoadError(
-          err instanceof Error
-            ? `Supabase failed: ${err.message}. Showing mock data.`
-            : "Supabase failed. Showing mock data.",
-        );
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadPoints();
+    fetchCollectionPointsFromSupabase()
+      .then((fetched) => {
+        if (isMounted) setLoadState({ status: "ok", points: fetched });
+      })
+      .catch((err) => {
+        if (isMounted)
+          setLoadState({
+            status: "error",
+            message: err instanceof Error ? err.message : String(err),
+          });
+      });
 
     return () => {
       isMounted = false;
     };
   }, [points, useSupabaseData]);
 
-  const sourcePoints = points ?? livePoints;
+  const sourcePoints = loadState.status === "ok" ? loadState.points : [];
   const filteredPoints =
-  selectedDeeeType === "all"
-    ? sourcePoints
-    : sourcePoints.filter((point) =>
-        point.deeeTypes.includes(selectedDeeeType),
-      );
+    selectedDeeeType === "all"
+      ? sourcePoints
+      : sourcePoints.filter((p) => p.deeeTypes.includes(selectedDeeeType));
 
   return (
     <section className="rounded-2xl border border-green-100 bg-white p-4 shadow-sm">
@@ -116,27 +91,25 @@ export function CollectionMap({
         <p className="text-sm text-gray-600">
           Colored pins show nearby licensed collectors and drop-off locations.
         </p>
-        {isLoading ? (
-            <p className="mt-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800">
-                Loading collection points from Supabase...
-            </p>
-            ) : loadError ? (
-            <p className="mt-2 rounded-xl bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
-                {loadError}
-            </p>
-            ) : useSupabaseData && !points ? (
-  <p className="mt-2 rounded-xl bg-green-50 px-3 py-2 text-sm font-semibold text-green-800">
-    Data source: Supabase live data · {filteredPoints.length} points
-  </p>
-) : (
-  <p className="mt-2 rounded-xl bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
-    Data source: manually passed/mock data · {filteredPoints.length} points
-  </p>
-)}
+        {loadState.status === "loading" && (
+          <p className="mt-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800">
+            Loading collection points from Supabase...
+          </p>
+        )}
+        {loadState.status === "error" && (
+          <p className="mt-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
+            Failed to load: {loadState.message}
+          </p>
+        )}
+        {loadState.status === "ok" && (
+          <p className="mt-2 rounded-xl bg-green-50 px-3 py-2 text-sm font-semibold text-green-800">
+            Live data · Supabase · {filteredPoints.length} point{filteredPoints.length !== 1 ? "s" : ""}
+          </p>
+        )}
       </div>
 
       <div
-        className="overflow-hidden rounded-2xl border border-green-100"
+        className="isolate overflow-hidden rounded-2xl border border-green-100"
         style={{ height }}
       >
         <MapContainer

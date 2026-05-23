@@ -1,60 +1,57 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import type { ComponentType } from "react";
-
-type AdminDashboardComponent = ComponentType;
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { Loader2, ShieldCheck } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { AdminDashboard } from "../integrations/AdminDashboard";
 
 export const Route = createFileRoute("/p4-dashboard")({
-  component: P4DashboardPage,
+  beforeLoad: async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      throw redirect({ to: "/login" });
+    }
+  },
+  component: AdminDashboardPage,
+  head: () => ({ meta: [{ title: "Admin Dashboard — e-Return" }] }),
 });
 
-function P4DashboardPage() {
-  const [AdminDashboard, setAdminDashboard] =
-    useState<AdminDashboardComponent | null>(null);
+function AdminDashboardPage() {
+  const { user } = useAuth();
+  const { data: role, isLoading } = useUserRole();
 
-  const [error, setError] = useState<string | null>(null);
+  if (isLoading || !user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-green-50">
+        <Loader2 className="h-6 w-6 animate-spin text-green-800" />
+      </main>
+    );
+  }
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadDashboard() {
-      try {
-        const dashboardModule = await import("../integrations/AdminDashboard");
-
-        if (!isMounted) return;
-
-        setAdminDashboard(() => dashboardModule.AdminDashboard);
-      } catch (err) {
-        console.error("Failed to load P4 dashboard:", err);
-
-        if (!isMounted) return;
-
-        setError(err instanceof Error ? err.message : String(err));
-      }
-    }
-
-    loadDashboard();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  if (role !== "admin") {
+    return (
+      <main className="mx-auto max-w-md px-4 py-20 text-center">
+        <ShieldCheck className="mx-auto h-12 w-12 text-green-800" />
+        <h1 className="mt-4 text-2xl font-bold text-green-950">
+          Admin access required
+        </h1>
+        <p className="mt-2 text-sm text-gray-600">
+          This page is restricted to platform administrators.
+        </p>
+        <Link
+          to="/"
+          className="mt-6 inline-flex rounded-md bg-green-800 px-4 py-2 text-sm font-semibold text-white hover:bg-green-900"
+        >
+          Back to home
+        </Link>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-green-50 p-6">
       <div className="mx-auto max-w-7xl">
-        {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800 shadow-sm">
-            <p className="font-bold">P4 dashboard failed to load.</p>
-            <p className="mt-2 text-sm">{error}</p>
-          </div>
-        ) : !AdminDashboard ? (
-          <div className="rounded-2xl border border-green-100 bg-white p-6 text-green-900 shadow-sm">
-            Loading P4 admin dashboard...
-          </div>
-        ) : (
-          <AdminDashboard />
-        )}
+        <AdminDashboard />
       </div>
     </main>
   );

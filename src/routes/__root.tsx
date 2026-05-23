@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -126,6 +127,7 @@ function Nav() {
   const { data: role } = useUserRole();
   const displayName =
     (user?.user_metadata?.name as string | undefined) ?? user?.email?.split("@")[0];
+  const isAdmin = role === "admin";
   const isCollector = role === "collector";
 
   return (
@@ -136,6 +138,11 @@ function Nav() {
           <span className="text-lg font-semibold tracking-tight text-foreground">e-Return</span>
         </Link>
         <nav className="flex items-center gap-1.5">
+          {user && isAdmin && (
+            <Link to="/p4-dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+              Admin Dashboard
+            </Link>
+          )}
           {user && isCollector && (
             <>
               <Link to="/collector/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
@@ -149,7 +156,7 @@ function Nav() {
               </Link>
             </>
           )}
-          {user && !isCollector && (
+          {user && !isAdmin && !isCollector && (
             <>
               <Link to="/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
                 {t("nav.dashboard")}
@@ -199,6 +206,9 @@ function Nav() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdminRoute = pathname.startsWith("/p4-");
+
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
@@ -207,7 +217,7 @@ function RootComponent() {
           <Outlet />
         </div>
         <VoucherRealtimeListener />
-        <ChatWidget />
+        {!isAdminRoute && <ChatWidget />}
         <Toaster />
       </LanguageProvider>
     </QueryClientProvider>
