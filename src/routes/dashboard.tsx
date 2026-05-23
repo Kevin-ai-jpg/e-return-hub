@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState, type ComponentType } from "react";
 import { Package, Ticket, Leaf, ArrowRight, Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/i18n/LanguageProvider";
-import { PickupQRCode } from "@/integrations/PickupQRCode";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -116,6 +116,31 @@ function StatCard({
 
 function Dashboard() {
   const { t } = useTranslation();
+  const [PickupQRCode, setPickupQRCode] = useState<ComponentType<{
+    pickupRequestId?: string;
+    collectorName?: string;
+    deeeType?: string;
+    status?: string;
+  }> | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    import("@/integrations/PickupQRCode")
+      .then((module) => {
+        if (mounted) {
+          setPickupQRCode(() => module.PickupQRCode);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load pickup QR code:", error);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard-summary"],
     queryFn: loadSummary,
@@ -226,7 +251,7 @@ function Dashboard() {
         )}
       </section>
 
-      {nextPickup && (
+      {nextPickup && PickupQRCode && (
         <section className="mt-8">
           <PickupQRCode
             pickupRequestId={nextPickup.id}

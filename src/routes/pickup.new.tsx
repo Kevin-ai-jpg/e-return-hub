@@ -1,8 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Smartphone, Laptop, Tv, Refrigerator, ArrowRight, ArrowLeft } from "lucide-react";
+import { useEffect, useState, type ComponentType } from "react";
+import { Smartphone, Laptop, Tv, Refrigerator, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageProvider";
-import { CollectionMap } from "@/integrations/CollectionMap";
 
 export const Route = createFileRoute("/pickup/new")({
   component: NewPickup,
@@ -28,6 +27,28 @@ function NewPickup() {
   const [deeeType, setDeeeType] = useState<string>("");
   const [county, setCounty] = useState<string>("");
   const [address, setAddress] = useState<string>("");
+  const [CollectionMap, setCollectionMap] = useState<ComponentType<{
+    selectedDeeeType?: string;
+    height?: string;
+  }> | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    import("@/integrations/CollectionMap")
+      .then((module) => {
+        if (mounted) {
+          setCollectionMap(() => module.CollectionMap);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load collection map:", error);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const canContinue = deeeType && county;
 
@@ -120,7 +141,13 @@ function NewPickup() {
       </div>
 
       <div className="mt-8">
-        <CollectionMap selectedDeeeType={deeeType || "all"} height="380px" />
+        {CollectionMap ? (
+          <CollectionMap selectedDeeeType={deeeType || "all"} height="380px" />
+        ) : (
+          <div className="flex h-[380px] items-center justify-center rounded-2xl border border-border bg-card text-sm text-muted-foreground">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading map…
+          </div>
+        )}
       </div>
     </main>
   );
