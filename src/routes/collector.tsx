@@ -19,9 +19,10 @@ export const Route = createFileRoute("/collector")({
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
-      throw redirect({ to: "/login", search: { redirect: "/collector/dashboard" } as never });
+      throw redirect({ to: "/login" });
     }
   },
+
   component: CollectorLayout,
   head: () => ({ meta: [{ title: "Collector Workspace — e-Return" }] }),
 });
