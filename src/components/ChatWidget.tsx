@@ -6,9 +6,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MessageBubble, TypingDots, type ChatMessage } from "@/components/chat/MessageBubble";
 import { ChatComposer } from "@/components/chat/ChatComposer";
 import { useTranslation } from "@/i18n/LanguageProvider";
+import { readChatImageFile, type ParsedChatImage } from "@/lib/chatImage";
 
 const SESSION_KEY = "eReturn.chatSession";
-/** Flask/local API or legacy n8n webhook — same POST contract. */
 const CHAT_API_URL = (
   import.meta.env.VITE_CHAT_API_URL ?? import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL
 ) as string | undefined;
@@ -29,6 +29,7 @@ export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [pendingImage, setPendingImage] = useState<ParsedChatImage | null>(null);
   const [pending, setPending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const suggestions = [t("chat.suggest1"), t("chat.suggest2"), t("chat.suggest3")];
@@ -37,20 +38,36 @@ export function ChatWidget() {
     if (open && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, pending, open]);
+  }, [messages, pending, open, pendingImage]);
+
+  const handleImageSelect = async (file: File) => {
+    try {
+      const parsed = await readChatImageFile(file);
+      setPendingImage(parsed);
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "";
+      if (code === "INVALID_TYPE") toast.error(t("chat.invalidImage"));
+      else if (code === "TOO_LARGE") toast.error(t("chat.imageTooLarge"));
+      else toast.error(t("chat.error"));
+    }
+  };
 
   const send = async (textOverride?: string) => {
     const text = (textOverride ?? input).trim();
-    if (!text || pending) return;
+    const image = pendingImage;
+    if ((!text && !image) || pending) return;
 
+    const displayText = text || t("chat.imageDefaultPrompt");
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
-      content: text,
+      content: displayText,
+      imagePreviewUrl: image?.previewUrl,
     };
-    const nextHistory = [...messages, userMsg];
-    setMessages(nextHistory);
+    const priorMessages = messages;
+    setMessages([...priorMessages, userMsg]);
     setInput("");
+    setPendingImage(null);
     setPending(true);
 
     try {
@@ -61,15 +78,21 @@ export function ChatWidget() {
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData?.user?.id ?? null;
 
+      const payload: Record<string, unknown> = {
+        sessionId: getSessionId(),
+        userId,
+        chat_history: priorMessages.map((m) => ({ role: m.role, content: m.content })),
+        fresh_text: displayText,
+      };
+      if (image) {
+        payload.fresh_image_base64 = image.base64;
+        payload.media_type = image.mediaType;
+      }
+
       const resp = await fetch(CHAT_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: getSessionId(),
-          userId,
-          chat_history: messages.map((m) => ({ role: m.role, content: m.content })),
-          fresh_text: text,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!resp.ok) {
@@ -101,9 +124,9 @@ export function ChatWidget() {
     } catch (err) {
       console.error("[ChatWidget]", err);
       toast.error(t("chat.error"));
-      // Roll back user message so they can retry
-      setMessages((prev) => prev.filter((m) => m.id !== userMsg.id));
+      setMessages(priorMessages);
       setInput(text);
+      if (image) setPendingImage(image);
     } finally {
       setPending(false);
     }
@@ -111,7 +134,6 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* Floating button */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -123,7 +145,6 @@ export function ChatWidget() {
         </button>
       )}
 
-      {/* Panel */}
       {open && (
         <div
           className={`fixed z-50 flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${
@@ -134,7 +155,6 @@ export function ChatWidget() {
           role="dialog"
           aria-label={t("chat.title")}
         >
-          {/* Header */}
           <div className="flex items-center justify-between border-b border-border bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-primary-foreground">
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/15">
@@ -154,7 +174,6 @@ export function ChatWidget() {
             </button>
           </div>
 
-          {/* Messages */}
           <div
             ref={scrollRef}
             className="flex-1 space-y-3 overflow-y-auto bg-background/40 p-4"
@@ -185,11 +204,13 @@ export function ChatWidget() {
             {pending && <TypingDots />}
           </div>
 
-          {/* Composer */}
           <ChatComposer
             value={input}
             onChange={setInput}
             onSend={() => send()}
+            onImageSelect={handleImageSelect}
+            pendingImage={pendingImage}
+            onClearImage={() => setPendingImage(null)}
             disabled={pending}
             pending={pending}
           />

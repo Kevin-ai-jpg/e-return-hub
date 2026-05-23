@@ -6,6 +6,8 @@ export interface ChatMessage {
   id: string;
   role: ChatRole;
   content: string;
+  /** Data URL for user-uploaded product photos shown in the thread. */
+  imagePreviewUrl?: string;
 }
 
 export function MessageBubble({ message }: { message: ChatMessage }) {
@@ -25,7 +27,16 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
         }`}
       >
         {isUser ? (
-          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          <div className="space-y-2">
+            {message.imagePreviewUrl && (
+              <img
+                src={message.imagePreviewUrl}
+                alt=""
+                className="max-h-40 w-full rounded-lg object-cover"
+              />
+            )}
+            <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          </div>
         ) : (
           <div className="prose prose-sm max-w-none break-words [&_a]:text-primary [&_a]:underline [&_code]:rounded [&_code]:bg-background/50 [&_code]:px-1 [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
             <ReactMarkdown>{message.content}</ReactMarkdown>

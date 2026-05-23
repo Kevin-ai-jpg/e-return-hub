@@ -35,9 +35,13 @@ A floating AI chat widget (`src/components/ChatWidget.tsx`) is mounted globally 
   "sessionId": "uuid",
   "userId": "uuid | null",
   "chat_history": [{ "role": "user" | "assistant", "content": "..." }],
-  "fresh_text": "current user message"
+  "fresh_text": "current user message",
+  "fresh_image_base64": "raw base64 (optional)",
+  "media_type": "image/jpeg"
 }
 ```
+
+With a product photo and no typed text, the widget sends `fresh_text: "Ce obiect este în imagine?"` (RO) / `"What object is in the image?"` (EN).
 
 **Flask returns** `{ "response": "...", "new_history_node": { ... } }`.
 
@@ -45,9 +49,41 @@ A floating AI chat widget (`src/components/ChatWidget.tsx`) is mounted globally 
 
 #### Local Flask (dev)
 
-1. Run Flask on `http://127.0.0.1:5000` (`python chat_endpoint/server.py`) — routes are `POST /api/chat` and `GET /api/health`.
-2. In `.env`, set `VITE_CHAT_API_URL=/api/chat` (Vite proxies `/api/*` → `http://127.0.0.1:5000/api/*`; override target with `CHAT_API_PROXY_TARGET`).
-3. Restart `bun run dev` after changing `.env`.
+**1. Create a virtual environment and install dependencies** (from project root `D:\e-return-hub`):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r chat_endpoint/requirements.txt
+```
+
+On macOS/Linux:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r chat_endpoint/requirements.txt
+```
+
+**2. Environment variables** — add to the root `.env` (loaded by `python-dotenv`):
+
+| Variable | Purpose |
+|---|---|
+| `OPENAI_API_KEY` | OpenAI API key for the agent |
+| `SUPABASE_URL` | Same as frontend (`https://….supabase.co`) |
+| `SUPABASE_KEY` | Supabase key with read access to `collector_offers` / `collectors` (anon or service role) |
+
+**3. Start the server** (must run from project root so `chat_endpoint` imports work):
+
+```powershell
+python -m chat_endpoint.server
+```
+
+Health check: `http://127.0.0.1:5000/api/health`
+
+**4. Frontend** — in `.env`, set `VITE_CHAT_API_URL=/api/chat` (Vite proxies `/api/*` → `http://127.0.0.1:5000/api/*`). Restart `bun run dev` after changing `.env`.
+
+If PowerShell blocks activation: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 
 If you call Flask directly (e.g. `VITE_CHAT_API_URL=http://127.0.0.1:5000/chat`), enable CORS on Flask for `http://localhost:8080` (or your dev origin).
 

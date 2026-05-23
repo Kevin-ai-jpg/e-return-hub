@@ -163,6 +163,13 @@ export const translations: Record<Lang, Dict> = {
     "chat.error": "Assistant is not responding, please try again.",
     "chat.open": "Open AI assistant",
     "chat.close": "Close",
+    "chat.send": "Send message",
+    "chat.addPhoto": "Add product photo",
+    "chat.removePhoto": "Remove photo",
+    "chat.photoAttached": "Photo ready to send",
+    "chat.imageDefaultPrompt": "What object is in the image?",
+    "chat.invalidImage": "Please use a JPEG, PNG, or WebP image.",
+    "chat.imageTooLarge": "Image must be 5 MB or smaller.",
 
     // Common
     "common.language": "Language",
@@ -325,6 +332,13 @@ export const translations: Record<Lang, Dict> = {
     "chat.error": "Asistentul nu răspunde, încearcă din nou.",
     "chat.open": "Deschide asistentul AI",
     "chat.close": "Închide",
+    "chat.send": "Trimite mesaj",
+    "chat.addPhoto": "Adaugă poză produs",
+    "chat.removePhoto": "Elimină poza",
+    "chat.photoAttached": "Poză pregătită de trimitere",
+    "chat.imageDefaultPrompt": "Ce obiect este în imagine?",
+    "chat.invalidImage": "Folosește o imagine JPEG, PNG sau WebP.",
+    "chat.imageTooLarge": "Imaginea trebuie să aibă maximum 5 MB.",
 
     // Common
     "common.language": "Limbă",
