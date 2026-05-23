@@ -12,6 +12,7 @@ import { ChatWidget } from "@/components/ChatWidget";
 import { LanguageProvider, useTranslation } from "@/i18n/LanguageProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 
 import appCss from "../styles.css?url";
 
@@ -89,8 +90,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function Nav() {
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
+  const { data: role } = useUserRole();
   const displayName =
     (user?.user_metadata?.name as string | undefined) ?? user?.email?.split("@")[0];
+  const isCollector = role === "collector";
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur">
@@ -100,15 +103,32 @@ function Nav() {
           <span className="text-lg font-semibold tracking-tight text-foreground">e-Return</span>
         </Link>
         <nav className="flex items-center gap-1.5">
-          <Link to="/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
-            {t("nav.dashboard")}
-          </Link>
-          <Link to="/vouchers" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
-            {t("nav.vouchers")}
-          </Link>
-          <Link to="/collector" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
-            {t("nav.collector")}
-          </Link>
+          {user && isCollector && (
+            <>
+              <Link to="/collector/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+                {t("nav.dashboard")}
+              </Link>
+              <Link to="/collector/pickups" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+                {t("nav.pendingPickups")}
+              </Link>
+              <Link to="/collector/offers" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+                {t("nav.offers")}
+              </Link>
+            </>
+          )}
+          {user && !isCollector && (
+            <>
+              <Link to="/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+                {t("nav.dashboard")}
+              </Link>
+              <Link to="/pickup/new" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+                {t("nav.newPickup")}
+              </Link>
+              <Link to="/vouchers" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+                {t("nav.vouchers")}
+              </Link>
+            </>
+          )}
           {user ? (
             <>
               {displayName && (

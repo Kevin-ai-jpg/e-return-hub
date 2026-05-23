@@ -15,6 +15,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectorRouteImport } from './routes/collector'
+import { Route as ApplyCollectorRouteImport } from './routes/apply-collector'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CollectorIndexRouteImport } from './routes/collector.index'
 import { Route as PickupOffersRouteImport } from './routes/pickup.offers'
@@ -54,6 +55,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const CollectorRoute = CollectorRouteImport.update({
   id: '/collector',
   path: '/collector',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApplyCollectorRoute = ApplyCollectorRouteImport.update({
+  id: '/apply-collector',
+  path: '/apply-collector',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -109,6 +115,7 @@ const CollectorCampaignsRoute = CollectorCampaignsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/apply-collector': typeof ApplyCollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -145,6 +153,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -165,6 +174,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/apply-collector'
     | '/collector'
     | '/dashboard'
     | '/login'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/apply-collector'
     | '/dashboard'
     | '/login'
     | '/register'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/apply-collector'
     | '/collector'
     | '/dashboard'
     | '/login'
@@ -219,6 +231,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApplyCollectorRoute: typeof ApplyCollectorRoute
   CollectorRoute: typeof CollectorRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
@@ -271,6 +284,13 @@ declare module '@tanstack/react-router' {
       path: '/collector'
       fullPath: '/collector'
       preLoaderRoute: typeof CollectorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apply-collector': {
+      id: '/apply-collector'
+      path: '/apply-collector'
+      fullPath: '/apply-collector'
+      preLoaderRoute: typeof ApplyCollectorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -372,6 +392,7 @@ const CollectorRouteWithChildren = CollectorRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApplyCollectorRoute: ApplyCollectorRoute,
   CollectorRoute: CollectorRouteWithChildren,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
