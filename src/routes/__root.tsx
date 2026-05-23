@@ -89,7 +89,10 @@ function Nav() {
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold">e</div>
           <span className="text-lg font-semibold tracking-tight text-foreground">e-Return</span>
         </Link>
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-1">
+          <Link to="/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+            Dashboard
+          </Link>
           <Link to="/login" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
             Login
           </Link>
