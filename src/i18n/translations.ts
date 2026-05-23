@@ -57,6 +57,8 @@ export const translations: Record<Lang, Dict> = {
     "landing.map.desc": "Browse certified DEEE drop-off locations across Romania.",
     "landing.qr.title": "Open on your phone",
     "landing.qr.desc": "Scan the QR code to launch e-Return on mobile and start a pickup in seconds.",
+    "landing.partners.title": "Our certified partners",
+    "landing.partners.desc": "Authorized DEEE collectors operating across Romania.",
 
     // Auth
     "auth.welcomeBack": "Welcome back",
@@ -331,6 +333,8 @@ export const translations: Record<Lang, Dict> = {
     "landing.map.desc": "Explorează locațiile DEEE autorizate din toată România.",
     "landing.qr.title": "Deschide pe telefon",
     "landing.qr.desc": "Scanează codul QR pentru a deschide e-Return pe mobil și a programa o ridicare în câteva secunde.",
+    "landing.partners.title": "Partenerii noștri certificați",
+    "landing.partners.desc": "Colectori DEEE autorizați care operează în toată România.",
 
     // Auth
     "auth.welcomeBack": "Bine ai revenit",

@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Recycle, Coins, Shield, MapPin, QrCode } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/")({
@@ -14,6 +16,19 @@ function Landing() {
     if (typeof window !== "undefined") setSiteUrl(window.location.origin);
   }, []);
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(siteUrl)}`;
+  const { data: partners = [] } = useQuery({
+    queryKey: ["landing-retailers"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("retailers")
+        .select("id, name, logo_url, website_url")
+        .eq("active", true)
+        .order("name");
+      if (error) throw error;
+      return (data ?? []) as Array<{ id: string; name: string; logo_url: string | null; website_url: string | null }>;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
   const features = [
     { icon: Recycle, title: t("landing.feature1.title"), desc: t("landing.feature1.desc") },
     { icon: Coins, title: t("landing.feature2.title"), desc: t("landing.feature2.desc") },
@@ -105,6 +120,42 @@ function Landing() {
           </div>
         </div>
       </section>
+
+      {partners.length > 0 && (
+        <section className="border-t border-border bg-secondary/40">
+          <div className="mx-auto max-w-6xl px-4 py-16">
+            <div className="text-center">
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
+                {t("landing.partners.title")}
+              </h2>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+                {t("landing.partners.desc")}
+              </p>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-5 items-center">
+              {partners.map((p) => (
+                <a
+                  key={p.id}
+                  href={p.website_url ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={p.name}
+                  className="group flex h-24 items-center justify-center rounded-xl border border-border bg-card p-4 transition hover:border-accent hover:shadow-md"
+                >
+                  <img
+                    src={p.logo_url ?? ""}
+                    alt={p.name}
+                    loading="lazy"
+                    className="max-h-12 max-w-[140px] object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+
 
       <section className="border-t border-border bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-10 sm:flex-row">

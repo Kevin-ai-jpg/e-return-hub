@@ -251,6 +251,33 @@ export type Database = {
           },
         ]
       }
+      retailers: {
+        Row: {
+          active: boolean | null
+          discount_percent: number | null
+          id: string
+          logo_url: string | null
+          name: string
+          website_url: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          discount_percent?: number | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          website_url?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          discount_percent?: number | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           address: string | null
@@ -287,6 +314,8 @@ export type Database = {
           created_at: string | null
           expires_at: string | null
           id: string
+          redeemed_at: string | null
+          retailer_id: string | null
           status: string | null
           user_id: string | null
           value_lei: number | null
@@ -296,6 +325,8 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
+          redeemed_at?: string | null
+          retailer_id?: string | null
           status?: string | null
           user_id?: string | null
           value_lei?: number | null
@@ -305,11 +336,20 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
+          redeemed_at?: string | null
+          retailer_id?: string | null
           status?: string | null
           user_id?: string | null
           value_lei?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "vouchers_retailer_id_fkey"
+            columns: ["retailer_id"]
+            isOneToOne: false
+            referencedRelation: "retailers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vouchers_user_id_fkey"
             columns: ["user_id"]
