@@ -46,6 +46,15 @@ function Landing() {
               {t("landing.cta.secondary")}
             </Link>
           </div>
+          <div className="mt-6">
+            <Link
+              to="/apply-collector"
+              className="inline-flex items-center gap-2 rounded-md border-2 border-[#1B5E20] bg-[#E8F5E9] px-6 py-3 text-base font-semibold text-[#1B5E20] shadow-sm transition hover:bg-[#1B5E20] hover:text-white"
+            >
+              <Recycle className="h-4 w-4" />
+              {t("landing.cta.partner")}
+            </Link>
+          </div>
         </div>
       </section>
 
