@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CollectorRouteImport } from './routes/collector'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PickupOffersRouteImport } from './routes/pickup.offers'
 import { Route as PickupNewRouteImport } from './routes/pickup.new'
 
+const VouchersRoute = VouchersRouteImport.update({
+  id: '/vouchers',
+  path: '/vouchers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -29,6 +36,11 @@ const LoginRoute = LoginRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectorRoute = CollectorRouteImport.update({
+  id: '/collector',
+  path: '/collector',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -49,26 +61,32 @@ const PickupNewRoute = PickupNewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/vouchers': typeof VouchersRoute
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/vouchers': typeof VouchersRoute
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/vouchers': typeof VouchersRoute
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
 }
@@ -76,40 +94,55 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/collector'
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/vouchers'
     | '/pickup/new'
     | '/pickup/offers'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/collector'
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/vouchers'
     | '/pickup/new'
     | '/pickup/offers'
   id:
     | '__root__'
     | '/'
+    | '/collector'
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/vouchers'
     | '/pickup/new'
     | '/pickup/offers'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CollectorRoute: typeof CollectorRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  VouchersRoute: typeof VouchersRoute
   PickupNewRoute: typeof PickupNewRoute
   PickupOffersRoute: typeof PickupOffersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vouchers': {
+      id: '/vouchers'
+      path: '/vouchers'
+      fullPath: '/vouchers'
+      preLoaderRoute: typeof VouchersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -129,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collector': {
+      id: '/collector'
+      path: '/collector'
+      fullPath: '/collector'
+      preLoaderRoute: typeof CollectorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -157,9 +197,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CollectorRoute: CollectorRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  VouchersRoute: VouchersRoute,
   PickupNewRoute: PickupNewRoute,
   PickupOffersRoute: PickupOffersRoute,
 }
