@@ -30,7 +30,7 @@ export const Route = createFileRoute("/apply-collector")({
 
 const WEBHOOK_URL =
   (import.meta.env.VITE_COLLECTOR_APPLICATION_WEBHOOK as string | undefined) ??
-  "https://example.com/webhook/collector-application";
+  "https://lucassecara.app.n8n.cloud/webhook/partner-request";
 
 const schema = z.object({
   companyName: z.string().trim().min(2).max(120),
@@ -81,13 +81,11 @@ function ApplyCollectorPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...parsed.data,
-          counties: parsed.data.counties
-            .split(",")
-            .map((c) => c.trim())
-            .filter(Boolean),
-          submittedAt: new Date().toISOString(),
-          source: "e-return-web",
+          company_name: parsed.data.companyName,
+          contact_person: parsed.data.contactPerson,
+          email: parsed.data.email,
+          phone: parsed.data.phone,
+          counties: parsed.data.counties,
         }),
       });
       toast.success(t("apply.success"));
