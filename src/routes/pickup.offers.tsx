@@ -302,6 +302,20 @@ function OffersPanel() {
         <span className="font-medium text-foreground">{t("pickup.step2")}</span>
       </div>
 
+      <div className="mt-6">
+        {CollectionMap ? (
+          <CollectionMap
+            selectedDeeeType={deeeType || "all"}
+            height="380px"
+            onPointClick={handlePointClick}
+          />
+        ) : (
+          <div className="flex h-[380px] items-center justify-center rounded-2xl border border-border bg-card text-sm text-muted-foreground">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading map…
+          </div>
+        )}
+      </div>
+
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
