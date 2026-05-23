@@ -35,6 +35,10 @@ export const translations: Record<Lang, Dict> = {
     "landing.compliance":
       "Compliant with Romanian DEEE regulations · Certified collectors only",
     "landing.cta.strip": "Start recycling",
+    "landing.map.title": "Find a collection point near you",
+    "landing.map.desc": "Browse certified DEEE drop-off locations across Romania.",
+    "landing.qr.title": "Open on your phone",
+    "landing.qr.desc": "Scan the QR code to launch e-Return on mobile and start a pickup in seconds.",
 
     // Auth
     "auth.welcomeBack": "Welcome back",
