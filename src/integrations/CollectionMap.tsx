@@ -1,6 +1,8 @@
 import "leaflet/dist/leaflet.css";
 
 import L from "leaflet";
+import { useEffect, useState } from "react";
+import { fetchCollectionPointsFromSupabase } from "./p4SupabaseData";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { Clock, MapPin, Recycle, Star } from "lucide-react";
 import {
@@ -12,6 +14,7 @@ type CollectionMapProps = {
   points?: CollectionPoint[];
   selectedDeeeType?: string;
   height?: string;
+  useSupabaseData?: boolean;
 };
 
 function createCompanyIcon(color: string) {
@@ -39,14 +42,70 @@ function formatPickupMethod(method: CollectionPoint["pickupMethods"]) {
 }
 
 export function CollectionMap({
-  points = mockCollectionPoints,
+  points,
   selectedDeeeType = "all",
   height = "420px",
+  useSupabaseData = true,
 }: CollectionMapProps) {
+  const [livePoints, setLivePoints] =
+    useState<CollectionPoint[]>(mockCollectionPoints);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!useSupabaseData || points) return;
+
+    let isMounted = true;
+
+    async function loadPoints() {
+      try {
+        setIsLoading(true);
+        setLoadError(null);
+
+        const supabasePoints = await fetchCollectionPointsFromSupabase();
+
+        console.log("P4 Supabase collection points:", supabasePoints);
+
+        if (!isMounted) return;
+
+        if (supabasePoints.length > 0) {
+          setLivePoints(supabasePoints);
+        } else {
+          setLivePoints(mockCollectionPoints);
+          setLoadError("No Supabase collection points found. Showing mock data.");
+        }
+      } catch (err) {
+        console.error("Failed to load collection points from Supabase:", err);
+
+        if (!isMounted) return;
+
+        setLivePoints(mockCollectionPoints);
+        setLoadError(
+          err instanceof Error
+            ? `Supabase failed: ${err.message}. Showing mock data.`
+            : "Supabase failed. Showing mock data.",
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadPoints();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [points, useSupabaseData]);
+
+  const sourcePoints = points ?? livePoints;
   const filteredPoints =
-    selectedDeeeType === "all"
-      ? points
-      : points.filter((point) => point.deeeTypes.includes(selectedDeeeType));
+  selectedDeeeType === "all"
+    ? sourcePoints
+    : sourcePoints.filter((point) =>
+        point.deeeTypes.includes(selectedDeeeType),
+      );
 
   return (
     <section className="rounded-2xl border border-green-100 bg-white p-4 shadow-sm">
@@ -57,6 +116,23 @@ export function CollectionMap({
         <p className="text-sm text-gray-600">
           Colored pins show nearby licensed collectors and drop-off locations.
         </p>
+        {isLoading ? (
+            <p className="mt-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800">
+                Loading collection points from Supabase...
+            </p>
+            ) : loadError ? (
+            <p className="mt-2 rounded-xl bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
+                {loadError}
+            </p>
+            ) : useSupabaseData && !points ? (
+  <p className="mt-2 rounded-xl bg-green-50 px-3 py-2 text-sm font-semibold text-green-800">
+    Data source: Supabase live data · {filteredPoints.length} points
+  </p>
+) : (
+  <p className="mt-2 rounded-xl bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
+    Data source: manually passed/mock data · {filteredPoints.length} points
+  </p>
+)}
       </div>
 
       <div
