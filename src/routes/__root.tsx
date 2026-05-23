@@ -94,6 +94,12 @@ function Nav() {
           <Link to="/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
             Dashboard
           </Link>
+          <Link to="/vouchers" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+            Vouchers
+          </Link>
+          <Link to="/collector" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+            Collector
+          </Link>
           <Link to="/login" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
             Login
           </Link>
