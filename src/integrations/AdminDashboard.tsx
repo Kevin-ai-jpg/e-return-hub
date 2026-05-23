@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -11,11 +12,15 @@ import {
 } from "recharts";
 import { Award, BarChart3, Leaf, Recycle, Ticket, Truck } from "lucide-react";
 import {
-  countyStats,
-  dashboardKpis,
-  monthlyTrend,
-  topCollectors,
+  countyStats as mockCountyStats,
+  dashboardKpis as mockDashboardKpis,
+  monthlyTrend as mockMonthlyTrend,
+  topCollectors as mockTopCollectors,
 } from "../data/mockDashboardData";
+import {
+  fetchDashboardDataFromSupabase,
+  type DashboardLiveData,
+} from "./p4SupabaseData";
 
 const currentKgPerPerson = 2.8;
 const targetKgPerPerson = 4.0;
@@ -23,8 +28,15 @@ const progressPercent = Math.round(
   (currentKgPerPerson / targetKgPerPerson) * 100,
 );
 
+const mockDashboardData: DashboardLiveData = {
+  dashboardKpis: mockDashboardKpis,
+  countyStats: mockCountyStats,
+  monthlyTrend: mockMonthlyTrend,
+  topCollectors: mockTopCollectors,
+};
+
 function formatNumber(value: number) {
-  return new Intl.NumberFormat("en-US").format(value);
+  return new Intl.NumberFormat("en-US").format(Math.round(value));
 }
 
 function KpiCard({
@@ -56,6 +68,66 @@ function KpiCard({
 }
 
 export function AdminDashboard() {
+  const [dashboardData, setDashboardData] =
+    useState<DashboardLiveData>(mockDashboardData);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataSourceMessage, setDataSourceMessage] = useState(
+    "Loading dashboard data from Supabase...",
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDashboardData() {
+      try {
+        setIsLoading(true);
+
+        const liveData = await fetchDashboardDataFromSupabase();
+
+        if (!isMounted) return;
+
+        const hasLiveData =
+          liveData.dashboardKpis.totalCollections > 0 ||
+          liveData.dashboardKpis.totalKgCollected > 0 ||
+          liveData.dashboardKpis.vouchersIssued > 0;
+
+        if (hasLiveData) {
+          setDashboardData(liveData);
+          setDataSourceMessage("Data source: Supabase live dashboard data");
+        } else {
+          setDashboardData(mockDashboardData);
+          setDataSourceMessage(
+            "No live dashboard rows found. Showing mock demo data.",
+          );
+        }
+      } catch (err) {
+        console.error("Failed to load dashboard data from Supabase:", err);
+
+        if (!isMounted) return;
+
+        setDashboardData(mockDashboardData);
+        setDataSourceMessage(
+          err instanceof Error
+            ? `Supabase failed: ${err.message}. Showing mock demo data.`
+            : "Supabase failed. Showing mock demo data.",
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadDashboardData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const { dashboardKpis, countyStats, monthlyTrend, topCollectors } =
+    dashboardData;
+
   return (
     <section className="space-y-6">
       <div className="rounded-3xl bg-gradient-to-r from-green-900 to-green-700 p-6 text-white shadow-sm">
@@ -68,6 +140,17 @@ export function AdminDashboard() {
         <p className="mt-2 max-w-3xl text-green-50">
           County statistics, collector performance, voucher activity, and
           progress toward the 4kg/person annual target.
+        </p>
+
+        <p
+          className={[
+            "mt-4 inline-flex rounded-xl px-3 py-2 text-sm font-semibold",
+            dataSourceMessage.includes("Supabase live")
+              ? "bg-white/15 text-white"
+              : "bg-yellow-100 text-yellow-900",
+          ].join(" ")}
+        >
+          {isLoading ? "Loading dashboard data from Supabase..." : dataSourceMessage}
         </p>
       </div>
 
@@ -106,7 +189,7 @@ export function AdminDashboard() {
                 Collection by county
               </h2>
               <p className="text-sm text-gray-600">
-                Mock aggregation: kg collected per county.
+                Kg collected per county.
               </p>
             </div>
             <BarChart3 className="text-green-800" />
@@ -170,7 +253,7 @@ export function AdminDashboard() {
             Monthly collection trend
           </h2>
           <p className="mb-4 text-sm text-gray-600">
-            Demo growth in collected e-waste after marketplace launch.
+            Growth in collected e-waste after marketplace launch.
           </p>
 
           <div className="h-72">

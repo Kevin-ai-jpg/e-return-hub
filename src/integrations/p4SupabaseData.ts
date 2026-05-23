@@ -129,3 +129,203 @@ export async function fetchCollectionPointsFromSupabase(): Promise<
     };
   });
 }
+
+export type DashboardKpis = {
+  totalCollections: number;
+  totalKgCollected: number;
+  vouchersIssued: number;
+  activeCollectors: number;
+  co2AvoidedKg: number;
+};
+
+export type CountyStat = {
+  county: string;
+  kgCollected: number;
+  collections: number;
+};
+
+export type MonthlyTrendPoint = {
+  month: string;
+  kgCollected: number;
+};
+
+export type TopCollector = {
+  companyName: string;
+  totalKgCollected: number;
+  collections: number;
+  rating: number;
+  vouchersLei: number;
+};
+
+export type DashboardLiveData = {
+  dashboardKpis: DashboardKpis;
+  countyStats: CountyStat[];
+  monthlyTrend: MonthlyTrendPoint[];
+  topCollectors: TopCollector[];
+};
+
+function getMonthLabel(dateValue: unknown) {
+  const date =
+    typeof dateValue === "string" || typeof dateValue === "number"
+      ? new Date(dateValue)
+      : null;
+
+  if (!date || Number.isNaN(date.getTime())) {
+    return "Unknown";
+  }
+
+  return date.toLocaleString("en-US", { month: "short" });
+}
+
+export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveData> {
+  const [
+    collectionsResult,
+    pickupRequestsResult,
+    vouchersResult,
+    collectorsResult,
+  ] = await Promise.all([
+    supabase
+      .from("collections")
+      .select("id, pickup_request_id, confirmed_at, kg_collected"),
+    supabase
+      .from("pickup_requests")
+      .select("id, collector_id, address, status, created_at"),
+    supabase.from("vouchers").select("id, value_lei, status, created_at"),
+    supabase.from("collectors").select("id, company_name, rating"),
+  ]);
+
+  if (collectionsResult.error) {
+    throw new Error(collectionsResult.error.message);
+  }
+
+  if (pickupRequestsResult.error) {
+    throw new Error(pickupRequestsResult.error.message);
+  }
+
+  if (vouchersResult.error) {
+    throw new Error(vouchersResult.error.message);
+  }
+
+  if (collectorsResult.error) {
+    throw new Error(collectorsResult.error.message);
+  }
+  console.log("P4 dashboard Supabase raw results:", {
+  collections: collectionsResult.data,
+  collectionsError: collectionsResult.error,
+  pickupRequests: pickupRequestsResult.data,
+  pickupRequestsError: pickupRequestsResult.error,
+  vouchers: vouchersResult.data,
+  vouchersError: vouchersResult.error,
+  collectors: collectorsResult.data,
+  collectorsError: collectorsResult.error,
+});
+  const collections = (collectionsResult.data ?? []) as DbRow[];
+  const pickupRequests = (pickupRequestsResult.data ?? []) as DbRow[];
+  const vouchers = (vouchersResult.data ?? []) as DbRow[];
+  const collectors = (collectorsResult.data ?? []) as DbRow[];
+
+  const pickupRequestById = new Map<string, DbRow>();
+
+  pickupRequests.forEach((request) => {
+    pickupRequestById.set(toString(request.id), request);
+  });
+
+  const collectorById = new Map<string, DbRow>();
+
+  collectors.forEach((collector) => {
+    collectorById.set(toString(collector.id), collector);
+  });
+
+  const totalKgCollected = collections.reduce(
+    (sum, collection) => sum + toNumber(collection.kg_collected),
+    0,
+  );
+
+  const countyMap = new Map<string, CountyStat>();
+  const monthMap = new Map<string, MonthlyTrendPoint>();
+  const collectorStatsMap = new Map<string, TopCollector>();
+
+  collections.forEach((collection) => {
+    const kg = toNumber(collection.kg_collected);
+    const pickupRequest = pickupRequestById.get(
+      toString(collection.pickup_request_id),
+    );
+
+    const address = toString(pickupRequest?.address);
+    const county = inferCountyFromAddress(address);
+
+    const existingCounty = countyMap.get(county) ?? {
+      county,
+      kgCollected: 0,
+      collections: 0,
+    };
+
+    existingCounty.kgCollected += kg;
+    existingCounty.collections += 1;
+    countyMap.set(county, existingCounty);
+
+    const month = getMonthLabel(collection.confirmed_at);
+    const existingMonth = monthMap.get(month) ?? {
+      month,
+      kgCollected: 0,
+    };
+
+    existingMonth.kgCollected += kg;
+    monthMap.set(month, existingMonth);
+
+    const collectorId = toString(pickupRequest?.collector_id);
+    const collector = collectorById.get(collectorId);
+
+    const companyName = toString(
+      collector?.company_name,
+      "Unknown Collector",
+    );
+
+    const existingCollector = collectorStatsMap.get(collectorId) ?? {
+      companyName,
+      totalKgCollected: 0,
+      collections: 0,
+      rating: toNumber(collector?.rating, 4.5),
+      vouchersLei: 0,
+    };
+
+    existingCollector.totalKgCollected += kg;
+    existingCollector.collections += 1;
+    collectorStatsMap.set(collectorId, existingCollector);
+  });
+
+  const totalVoucherLei = vouchers.reduce(
+    (sum, voucher) => sum + toNumber(voucher.value_lei),
+    0,
+  );
+
+  const topCollectors = Array.from(collectorStatsMap.values())
+    .map((collector) => {
+      const share =
+        totalKgCollected > 0
+          ? collector.totalKgCollected / totalKgCollected
+          : 0;
+
+      return {
+        ...collector,
+        vouchersLei: Math.round(totalVoucherLei * share),
+      };
+    })
+    .sort((a, b) => b.totalKgCollected - a.totalKgCollected)
+    .slice(0, 5);
+
+  return {
+    dashboardKpis: {
+      totalCollections: collections.length,
+      totalKgCollected,
+      vouchersIssued: vouchers.length,
+      activeCollectors: collectors.length,
+      co2AvoidedKg: Math.round(totalKgCollected * 2.5),
+    },
+    countyStats: Array.from(countyMap.values()).sort(
+      (a, b) => b.kgCollected - a.kgCollected,
+    ),
+    monthlyTrend: Array.from(monthMap.values()),
+    topCollectors,
+  };
+}
