@@ -65,11 +65,12 @@ async function loadSummary(): Promise<DashboardSummary> {
 
   const recent: DashboardSummary["recentActivity"] = [];
   for (const p of pickups.slice(0, 3)) {
+    const s = (p.status ?? "pending") as "pending" | "accepted" | "completed";
     recent.push({
       id: `p-${p.id}`,
-      label: `${p.deee_type ?? "DEEE"} — ${p.status ?? "scheduled"}`,
+      label: `${p.deee_type ?? "DEEE"}`,
       date: new Date(p.created_at ?? Date.now()).toLocaleDateString(),
-      status: p.status === "completed" ? "done" : "pending",
+      status: s,
     });
   }
   for (const v of activeVouchers.slice(0, 2)) {
