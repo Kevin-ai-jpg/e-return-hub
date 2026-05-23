@@ -114,6 +114,7 @@ function RootComponent() {
         <Nav />
         <Outlet />
       </div>
+      <Toaster />
     </QueryClientProvider>
   );
 }
