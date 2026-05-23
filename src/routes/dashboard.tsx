@@ -121,6 +121,23 @@ function Dashboard() {
     queryFn: loadSummary,
   });
 
+  const { data: nextPickup } = useQuery({
+    queryKey: ["next-accepted-pickup"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user?.id) return null;
+      const { data } = await supabase
+        .from("pickup_requests")
+        .select("id, deee_type, status, collector_id, collectors(company_name)")
+        .eq("user_id", u.user.id)
+        .eq("status", "accepted")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const summary: DashboardSummary = data ?? {
     pendingPickups: 0,
     activeVouchers: { count: 0, totalLei: 0 },
@@ -208,6 +225,17 @@ function Dashboard() {
           </ul>
         )}
       </section>
+
+      {nextPickup && (
+        <section className="mt-8">
+          <PickupQRCode
+            pickupRequestId={nextPickup.id}
+            collectorName={(nextPickup as { collectors?: { company_name?: string } }).collectors?.company_name ?? "Collector"}
+            deeeType={nextPickup.deee_type ?? "DEEE"}
+            status={nextPickup.status ?? "accepted"}
+          />
+        </section>
+      )}
     </main>
   );
 }
