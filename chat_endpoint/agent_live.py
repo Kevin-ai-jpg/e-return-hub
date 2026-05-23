@@ -10,7 +10,6 @@ from supabase import create_client, Client
 # ==============================================================================
 load_dotenv()
 
-# Ensure we throw a clean error if keys are missing from .env
 openai_key = os.getenv("OPENAI_API_KEY")
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
@@ -20,6 +19,9 @@ if not openai_key or not supabase_url or not supabase_key:
 
 openai_client = OpenAI(api_key=openai_key)
 supabase_client: Client = create_client(supabase_url, supabase_key)
+
+# Maximum system context message history array length boundary (14 nodes = 7 turns)
+MAX_HISTORY_NODES = 14 
 
 # ==============================================================================
 # 2. SYSTEM CORE PROMPT & AI TOOLS SPECIFICATION
@@ -56,11 +58,6 @@ TOOLS = [
 # 3. LIVE RELATIONAL DATABASE TOOL HANDLER
 # ==============================================================================
 def handle_live_tool_call(name, input_data):
-    """
-    Queries P2's deployed schema tables exactly as they are configured in Supabase.
-    Performs an implicit join between collector_offers and collectors, then
-    filters matching service areas from the Postgres text[] array field.
-    """
     if name == "search_offers":
         deee_type = input_data.get("deee_type")
         county = input_data.get("county")
@@ -68,7 +65,6 @@ def handle_live_tool_call(name, input_data):
         print(f"  [DB Query] Scanning collector_offers for deee_type='{deee_type}' servicing county='{county}'...")
         
         try:
-            # Select all matching offer rows and embed parent collector record properties
             response = supabase_client.table("collector_offers")\
                 .select("*, collectors(*)")\
                 .eq("deee_type", deee_type)\
@@ -76,14 +72,11 @@ def handle_live_tool_call(name, input_data):
                 
             cleaned_offers = []
             
-            # Loop over matches and evaluate P2's exact text[] array field
             for row in response.data:
                 collector_data = row.get("collectors")
-                
                 if collector_data and collector_data.get("service_area_counties"):
                     counties_list = collector_data["service_area_counties"]
                     
-                    # If the array contains the targeted user county string
                     if county in counties_list:
                         offer_info = {
                             "company_name": collector_data.get("company_name"),
@@ -106,20 +99,23 @@ def handle_live_tool_call(name, input_data):
     return "{}"
 
 # ==============================================================================
-# 4. UNIFIED CONVERSATIONAL MEMORY PIPELINE
+# 4. UNIFIED CONVERSATIONAL MEMORY PIPELINE WITH SLIDING MEMORY CAP
 # ==============================================================================
 def unified_agent_chat(chat_history, fresh_text=None, fresh_image_base64=None, media_type="image/jpeg"):
     """
-    Accepts an ongoing chat history list. Appends current input tokens (text, multi-modal images, 
-    or both), executes any necessary agent function routing loops, and returns the response.
+    Accepts an ongoing chat history list. Caps the maximum memory log length to protect
+    against context bloat, appends tokens, evaluates routing logic loops, and completes turns.
     """
-    # Initialize messages frame with base context
+    # Defensive Control: If history grows too large, clip the oldest items
+    if len(chat_history) > MAX_HISTORY_NODES:
+        print(f"  [Memory Safeguard Truncation] Sliding window active. Truncating context from {len(chat_history)} to last {MAX_HISTORY_NODES} nodes.")
+        chat_history = chat_history[-MAX_HISTORY_NODES:]
+
+    # Initialize message array with rules frame
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     messages.extend(chat_history)
     
-    # Construct structured modern OpenAI input blocks
     content_payload = []
-    
     if fresh_text:
         content_payload.append({"type": "text", "text": fresh_text})
         
@@ -133,7 +129,6 @@ def unified_agent_chat(chat_history, fresh_text=None, fresh_image_base64=None, m
     if content_payload:
         messages.append({"role": "user", "content": content_payload})
         
-    # Execution run loop to allow model tool chains to fully compute
     while True:
         response = openai_client.chat.completions.create(
             model="gpt-4o",
@@ -144,9 +139,7 @@ def unified_agent_chat(chat_history, fresh_text=None, fresh_image_base64=None, m
         response_message = response.choices[0].message
         
         if response_message.tool_calls:
-            # AI decided it needs to fetch context rows from Supabase
             messages.append(response_message)
-            
             for tool_call in response_message.tool_calls:
                 function_name = tool_call.function.name
                 function_args = json.loads(tool_call.function.arguments)
@@ -160,7 +153,6 @@ def unified_agent_chat(chat_history, fresh_text=None, fresh_image_base64=None, m
                     "content": tool_result
                 })
         else:
-            # Standard conversational text returned, loop successfully finished
             history_entry = {"role": "assistant", "content": response_message.content}
             return response_message.content, history_entry
 
@@ -172,11 +164,9 @@ if __name__ == "__main__":
     print("RUNNING PIPELINE: CONVERGED LIVE AGENT DEMO STATE")
     print("=" * 60)
     
-    # This list preserves conversational state between distinct prompt triggers
     session_history = []
     
-    # TRACK 1: Vision Multi-Modal Identification
-    print("\n[Turn 1] Simulating user image upload (test_fridge.jpg)...")
+    print("\n[Turn 1] Simulating user image upload (frigider.jpg)...")
     if os.path.exists("../Hacaton/test/frigider.jpg"):
         with open("../Hacaton/test/frigider.jpg", "rb") as image_file:
             base64_encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
@@ -186,28 +176,18 @@ if __name__ == "__main__":
             fresh_text="Ce obiect este în imagine? Este deșeu electronic (DEEE)?",
             fresh_image_base64=base64_encoded_string
         )
-        
-        # Append the exchange turns to preserve memory context
         session_history.append({"role": "user", "content": "Uploaded test_fridge.jpg image content."})
         session_history.append(history_node_1)
-        
         print(f"\nAI Response 1:\n{reply_1}")
     else:
-        print("  [Notice] 'test_fridge.jpg' file not detected locally in directory. Skipping Turn 1.")
+        print("  [Notice] 'frigider.jpg' file not detected locally in the directory path. Skipping Turn 1.")
     
-    # TRACK 2: Conversational Follow-Up Triggering Automated DB Query Tool
     print("\n" + "-" * 50)
     print("[Turn 2] Simulating user contextual follow-up request...")
-    
-    # Notice we don't repeat the word 'fridge' here. 
-    # Because of memory context, the AI knows what item we're talking about!
     user_follow_up = "Perfect, vreau să îl reciclez în Satu Mare. Ce oferte am?"
     print(f"User: {user_follow_up}")
     
-    reply_2, history_node_2 = unified_agent_chat(
-        session_history, 
-        fresh_text=user_follow_up
-    )
+    reply_2, history_node_2 = unified_agent_chat(session_history, fresh_text=user_follow_up)
     session_history.append({"role": "user", "content": user_follow_up})
     session_history.append(history_node_2)
     
