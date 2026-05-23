@@ -369,6 +369,7 @@ function OffersPanel() {
           <OfferCard
             key={offer.id} offer={offer}
             isBest={offer.id === bestId}
+            highlighted={!!offer.collector_id && offer.collector_id === highlightedCollectorId}
             onSelect={() => {
               setSelectedOffer(offer);
               const d = new Date();
