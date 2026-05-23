@@ -189,6 +189,38 @@ function OffersPanel() {
   const [sortBy, setSortBy] = useState<SortKey>("voucher");
   const [selectedOffer, setSelectedOffer] = useState<OfferRow | null>(null);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [highlightedCollectorId, setHighlightedCollectorId] = useState<string | null>(null);
+  const [CollectionMap, setCollectionMap] = useState<ComponentType<{
+    selectedDeeeType?: string;
+    height?: string;
+    onPointClick?: (point: CollectionPoint) => void;
+  }> | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    import("@/integrations/CollectionMap")
+      .then((m) => { if (mounted) setCollectionMap(() => m.CollectionMap); })
+      .catch((e) => console.error("Failed to load map:", e));
+    return () => { mounted = false; };
+  }, []);
+
+  const handlePointClick = (point: CollectionPoint) => {
+    const cid = point.collectorId;
+    if (!cid) {
+      toast.info("This collection point isn't linked to an offer yet.");
+      return;
+    }
+    const match = (data ?? []).find((o) => o.collector_id === cid);
+    if (!match) {
+      toast.info(`No matching offer from ${point.companyName} for this DEEE type.`);
+      return;
+    }
+    setHighlightedCollectorId(cid);
+    setTimeout(() => {
+      document.getElementById(`offer-${cid}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 0);
+    setTimeout(() => setHighlightedCollectorId(null), 2500);
+  };
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["offers", deeeType, county],
