@@ -1,22 +1,96 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Package, Ticket, Leaf, ArrowRight, Plus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Package, Ticket, Leaf, ArrowRight, Plus, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
   head: () => ({ meta: [{ title: "Dashboard — e-Return" }] }),
 });
 
-// Mock summary data — wire to Supabase later
-const summary = {
-  pendingPickups: 2,
-  activeVouchers: { count: 3, totalLei: 175 },
-  ecoImpact: { kg: 12.4, co2Kg: 38 },
-  recentActivity: [
-    { id: 1, label: "Pickup scheduled — Old fridge", date: "May 24", status: "pending" },
-    { id: 2, label: "Voucher earned — 80 lei", date: "May 18", status: "active" },
-    { id: 3, label: "Laptop collected (3.2 kg)", date: "May 10", status: "done" },
-  ],
+type DashboardSummary = {
+  pendingPickups: number;
+  activeVouchers: { count: number; totalLei: number };
+  ecoImpact: { kg: number; co2Kg: number };
+  recentActivity: Array<{
+    id: string;
+    label: string;
+    date: string;
+    status: "pending" | "active" | "done";
+  }>;
 };
+
+// CO2 saved ≈ 3 kg per kg of e-waste recycled (rough industry estimate)
+const CO2_PER_KG = 3;
+
+async function loadSummary(): Promise<DashboardSummary> {
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData?.user?.id;
+  if (!userId) {
+    return {
+      pendingPickups: 0,
+      activeVouchers: { count: 0, totalLei: 0 },
+      ecoImpact: { kg: 0, co2Kg: 0 },
+      recentActivity: [],
+    };
+  }
+
+  const [pickupsRes, vouchersRes, collectionsRes] = await Promise.all([
+    supabase
+      .from("pickup_requests")
+      .select("id, deee_type, status, scheduled_date, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("vouchers")
+      .select("id, value_lei, status, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("collections")
+      .select("id, kg_collected, confirmed_at, pickup_request_id, pickup_requests!inner(user_id)")
+      .eq("pickup_requests.user_id", userId),
+  ]);
+
+  const pickups = pickupsRes.data ?? [];
+  const vouchers = vouchersRes.data ?? [];
+  const collections = collectionsRes.data ?? [];
+
+  const activeVouchers = vouchers.filter((v) => (v.status ?? "active") === "active");
+  const totalLei = activeVouchers.reduce((sum, v) => sum + (v.value_lei ?? 0), 0);
+  const totalKg = collections.reduce(
+    (sum, c) => sum + (Number(c.kg_collected) || 0),
+    0,
+  );
+
+  const recent: DashboardSummary["recentActivity"] = [];
+  for (const p of pickups.slice(0, 3)) {
+    recent.push({
+      id: `p-${p.id}`,
+      label: `Pickup ${p.status ?? "scheduled"} — ${p.deee_type ?? "DEEE"}`,
+      date: new Date(p.created_at ?? Date.now()).toLocaleDateString(),
+      status: p.status === "completed" ? "done" : "pending",
+    });
+  }
+  for (const v of activeVouchers.slice(0, 2)) {
+    recent.push({
+      id: `v-${v.id}`,
+      label: `Voucher earned — ${v.value_lei ?? 0} lei`,
+      date: new Date(v.created_at ?? Date.now()).toLocaleDateString(),
+      status: "active",
+    });
+  }
+
+  return {
+    pendingPickups: pickups.filter((p) => p.status === "pending").length,
+    activeVouchers: { count: activeVouchers.length, totalLei },
+    ecoImpact: {
+      kg: Math.round(totalKg * 10) / 10,
+      co2Kg: Math.round(totalKg * CO2_PER_KG),
+    },
+    recentActivity: recent.slice(0, 5),
+  };
+}
 
 function StatCard({
   icon: Icon, label, value, hint, accent = false,
@@ -39,6 +113,18 @@ function StatCard({
 }
 
 function Dashboard() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard-summary"],
+    queryFn: loadSummary,
+  });
+
+  const summary: DashboardSummary = data ?? {
+    pendingPickups: 0,
+    activeVouchers: { count: 0, totalLei: 0 },
+    ecoImpact: { kg: 0, co2Kg: 0 },
+    recentActivity: [],
+  };
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -58,20 +144,20 @@ function Dashboard() {
         <StatCard
           icon={Package}
           label="Pending pickups"
-          value={summary.pendingPickups}
+          value={isLoading ? "—" : summary.pendingPickups}
           hint="Awaiting collector confirmation"
         />
         <StatCard
           icon={Ticket}
           label="Active vouchers"
-          value={`${summary.activeVouchers.totalLei} lei`}
+          value={isLoading ? "—" : `${summary.activeVouchers.totalLei} lei`}
           hint={`${summary.activeVouchers.count} vouchers available`}
           accent
         />
         <StatCard
           icon={Leaf}
           label="Eco-impact"
-          value={`${summary.ecoImpact.kg} kg`}
+          value={isLoading ? "—" : `${summary.ecoImpact.kg} kg`}
           hint={`~${summary.ecoImpact.co2Kg} kg CO₂ saved`}
         />
       </div>
@@ -79,27 +165,41 @@ function Dashboard() {
       <section className="mt-10 rounded-xl border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-lg font-semibold text-foreground">Recent activity</h2>
-          <Link to="/dashboard" className="text-sm font-medium text-primary hover:underline inline-flex items-center gap-1">
-            View all <ArrowRight className="h-3.5 w-3.5" />
+          <Link to="/vouchers" className="text-sm font-medium text-primary hover:underline inline-flex items-center gap-1">
+            View vouchers <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <ul className="divide-y divide-border">
-          {summary.recentActivity.map((item) => (
-            <li key={item.id} className="flex items-center justify-between px-6 py-4">
-              <div>
-                <p className="text-sm font-medium text-foreground">{item.label}</p>
-                <p className="text-xs text-muted-foreground">{item.date}</p>
-              </div>
-              <span className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${
-                item.status === "pending" ? "bg-accent/15 text-primary"
-                : item.status === "active" ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground"
-              }`}>
-                {item.status}
-              </span>
-            </li>
-          ))}
-        </ul>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center px-6 py-10 text-sm text-muted-foreground">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading…
+          </div>
+        ) : summary.recentActivity.length === 0 ? (
+          <div className="px-6 py-10 text-center">
+            <p className="text-sm font-medium text-foreground">No activity yet</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Start your first pickup to see it here.
+            </p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-border">
+            {summary.recentActivity.map((item) => (
+              <li key={item.id} className="flex items-center justify-between px-6 py-4">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{item.label}</p>
+                  <p className="text-xs text-muted-foreground">{item.date}</p>
+                </div>
+                <span className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${
+                  item.status === "pending" ? "bg-accent/15 text-primary"
+                  : item.status === "active" ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
+                }`}>
+                  {item.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </main>
   );
