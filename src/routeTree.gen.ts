@@ -31,7 +31,6 @@ import { Route as CollectorOffersRouteImport } from './routes/collector.offers'
 import { Route as CollectorDashboardRouteImport } from './routes/collector.dashboard'
 import { Route as CollectorCompanyRouteImport } from './routes/collector.company'
 import { Route as CollectorCampaignsRouteImport } from './routes/collector.campaigns'
-import { Route as ApiPublicVerifyCuiRouteImport } from './routes/api/public/verify-cui'
 
 const VouchersRoute = VouchersRouteImport.update({
   id: '/vouchers',
@@ -143,11 +142,6 @@ const CollectorCampaignsRoute = CollectorCampaignsRouteImport.update({
   path: '/campaigns',
   getParentRoute: () => CollectorRoute,
 } as any)
-const ApiPublicVerifyCuiRoute = ApiPublicVerifyCuiRouteImport.update({
-  id: '/api/public/verify-cui',
-  path: '/api/public/verify-cui',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -172,7 +166,6 @@ export interface FileRoutesByFullPath {
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
   '/collector/': typeof CollectorIndexRoute
-  '/api/public/verify-cui': typeof ApiPublicVerifyCuiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -196,7 +189,6 @@ export interface FileRoutesByTo {
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
   '/collector': typeof CollectorIndexRoute
-  '/api/public/verify-cui': typeof ApiPublicVerifyCuiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -222,7 +214,6 @@ export interface FileRoutesById {
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
   '/collector/': typeof CollectorIndexRoute
-  '/api/public/verify-cui': typeof ApiPublicVerifyCuiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -249,7 +240,6 @@ export interface FileRouteTypes {
     | '/pickup/new'
     | '/pickup/offers'
     | '/collector/'
-    | '/api/public/verify-cui'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -273,7 +263,6 @@ export interface FileRouteTypes {
     | '/pickup/new'
     | '/pickup/offers'
     | '/collector'
-    | '/api/public/verify-cui'
   id:
     | '__root__'
     | '/'
@@ -298,7 +287,6 @@ export interface FileRouteTypes {
     | '/pickup/new'
     | '/pickup/offers'
     | '/collector/'
-    | '/api/public/verify-cui'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -317,7 +305,6 @@ export interface RootRouteChildren {
   VouchersRoute: typeof VouchersRoute
   PickupNewRoute: typeof PickupNewRoute
   PickupOffersRoute: typeof PickupOffersRoute
-  ApiPublicVerifyCuiRoute: typeof ApiPublicVerifyCuiRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -476,13 +463,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectorCampaignsRouteImport
       parentRoute: typeof CollectorRoute
     }
-    '/api/public/verify-cui': {
-      id: '/api/public/verify-cui'
-      path: '/api/public/verify-cui'
-      fullPath: '/api/public/verify-cui'
-      preLoaderRoute: typeof ApiPublicVerifyCuiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -526,7 +506,6 @@ const rootRouteChildren: RootRouteChildren = {
   VouchersRoute: VouchersRoute,
   PickupNewRoute: PickupNewRoute,
   PickupOffersRoute: PickupOffersRoute,
-  ApiPublicVerifyCuiRoute: ApiPublicVerifyCuiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
