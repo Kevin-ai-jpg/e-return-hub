@@ -7,14 +7,47 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { ChatWidget } from "@/components/ChatWidget";
 import { LanguageProvider, useTranslation } from "@/i18n/LanguageProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
+
+function VoucherRealtimeListener() {
+  const { user } = useAuth();
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel(`vouchers-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "vouchers",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const v = payload.new as { code?: string; value_lei?: number };
+          toast.success(`🎉 Voucher nou: ${v.value_lei ?? 0} lei`, {
+            description: v.code ? `Cod: ${v.code}` : undefined,
+            duration: 8000,
+          });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+  return null;
+}
 
 function NotFoundComponent() {
   return (
