@@ -30,7 +30,7 @@ export const Route = createFileRoute("/apply-collector")({
 
 const WEBHOOK_URL =
   (import.meta.env.VITE_COLLECTOR_APPLICATION_WEBHOOK as string | undefined) ??
-  "https://example.com/webhook/collector-application";
+  "https://lucassecara.app.n8n.cloud/webhook/partner-request";
 
 const schema = z.object({
   companyName: z.string().trim().min(2).max(120),
