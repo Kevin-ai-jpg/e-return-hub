@@ -20,6 +20,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectorRouteImport } from './routes/collector'
 import { Route as ApplyCollectorRouteImport } from './routes/apply-collector'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CollectorIndexRouteImport } from './routes/collector.index'
 import { Route as PickupOffersRouteImport } from './routes/pickup.offers'
@@ -86,6 +88,16 @@ const ApplyCollectorRoute = ApplyCollectorRouteImport.update({
   path: '/apply-collector',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -139,6 +151,8 @@ const CollectorCampaignsRoute = CollectorCampaignsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
@@ -162,6 +176,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -185,6 +201,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
@@ -210,6 +228,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
+    | '/admin'
     | '/apply-collector'
     | '/collector'
     | '/dashboard'
@@ -233,6 +253,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
+    | '/admin'
     | '/apply-collector'
     | '/dashboard'
     | '/login'
@@ -255,6 +277,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
+    | '/admin'
     | '/apply-collector'
     | '/collector'
     | '/dashboard'
@@ -279,6 +303,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
+  AdminRoute: typeof AdminRoute
   ApplyCollectorRoute: typeof ApplyCollectorRoute
   CollectorRoute: typeof CollectorRouteWithChildren
   DashboardRoute: typeof DashboardRoute
@@ -371,6 +397,20 @@ declare module '@tanstack/react-router' {
       path: '/apply-collector'
       fullPath: '/apply-collector'
       preLoaderRoute: typeof ApplyCollectorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -472,6 +512,8 @@ const CollectorRouteWithChildren = CollectorRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
+  AdminRoute: AdminRoute,
   ApplyCollectorRoute: ApplyCollectorRoute,
   CollectorRoute: CollectorRouteWithChildren,
   DashboardRoute: DashboardRoute,
