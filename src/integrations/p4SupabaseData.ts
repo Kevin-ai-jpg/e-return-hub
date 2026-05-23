@@ -156,6 +156,7 @@ export async function fetchCollectionPointsFromSupabase(): Promise<
 
     return {
       id: toString(point.id, `collection-point-${index}`),
+      collectorId: toString(point.collector_id) || null,
       name: toString(point.name, `${companyName} Collection Point`),
       companyName,
       companyColor: companyColors[index % companyColors.length],
