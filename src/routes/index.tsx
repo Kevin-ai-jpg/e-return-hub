@@ -17,15 +17,15 @@ function Landing() {
   }, []);
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(siteUrl)}`;
   const { data: partners = [] } = useQuery({
-    queryKey: ["landing-partners"],
+    queryKey: ["landing-retailers"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("collectors")
-        .select("id, company_name, logo_url")
-        .not("logo_url", "is", null)
-        .order("company_name");
+      const { data, error } = await (supabase as any)
+        .from("retailers")
+        .select("id, name, logo_url, website_url")
+        .eq("active", true)
+        .order("name");
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as Array<{ id: string; name: string; logo_url: string | null; website_url: string | null }>;
     },
     staleTime: 5 * 60 * 1000,
   });
