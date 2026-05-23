@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Smartphone, Laptop, Tv, Refrigerator, ArrowRight, ArrowLeft } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/pickup/new")({
   component: NewPickup,
@@ -8,10 +9,10 @@ export const Route = createFileRoute("/pickup/new")({
 });
 
 const DEEE_TYPES = [
-  { value: "fridge", label: "Fridge", icon: Refrigerator },
-  { value: "phone", label: "Phone", icon: Smartphone },
-  { value: "laptop", label: "Laptop", icon: Laptop },
-  { value: "tv", label: "TV", icon: Tv },
+  { value: "fridge", labelKey: "deee.fridge", icon: Refrigerator },
+  { value: "phone", labelKey: "deee.phone", icon: Smartphone },
+  { value: "laptop", labelKey: "deee.laptop", icon: Laptop },
+  { value: "tv", labelKey: "deee.tv", icon: Tv },
 ] as const;
 
 const COUNTIES = [
@@ -21,6 +22,7 @@ const COUNTIES = [
 ];
 
 function NewPickup() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [deeeType, setDeeeType] = useState<string>("");
   const [county, setCounty] = useState<string>("");
@@ -40,30 +42,26 @@ function NewPickup() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Back to dashboard
+        <ArrowLeft className="h-4 w-4" /> {t("pickup.back")}
       </Link>
 
-      {/* Stepper */}
       <div className="mt-4 flex items-center gap-3 text-sm">
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">1</span>
-        <span className="font-medium text-foreground">What & where</span>
+        <span className="font-medium text-foreground">{t("pickup.step1")}</span>
         <div className="h-px flex-1 bg-border" />
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-muted-foreground">2</span>
-        <span className="text-muted-foreground">Choose offer</span>
+        <span className="text-muted-foreground">{t("pickup.step2")}</span>
       </div>
 
       <div className="mt-8 rounded-2xl border border-border bg-card p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-foreground">What are you recycling?</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Tell us the item type and your location to see competing offers from certified collectors.
-        </p>
+        <h1 className="text-2xl font-bold text-foreground">{t("pickup.title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("pickup.subtitle")}</p>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-8">
-          {/* DEEE type */}
           <div>
-            <label className="block text-sm font-semibold text-foreground">DEEE type</label>
+            <label className="block text-sm font-semibold text-foreground">{t("pickup.deeeType")}</label>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {DEEE_TYPES.map(({ value, label, icon: Icon }) => {
+              {DEEE_TYPES.map(({ value, labelKey, icon: Icon }) => {
                 const selected = deeeType === value;
                 return (
                   <button
@@ -75,38 +73,37 @@ function NewPickup() {
                     }`}
                   >
                     <Icon className="h-7 w-7" />
-                    {label}
+                    {t(labelKey)}
                   </button>
                 );
               })}
             </div>
             <div className="mt-3">
-              <label className="block text-xs font-medium text-muted-foreground">Or type custom</label>
+              <label className="block text-xs font-medium text-muted-foreground">{t("pickup.orCustom")}</label>
               <input
                 value={deeeType} onChange={(e) => setDeeeType(e.target.value)}
-                placeholder="e.g. microwave"
+                placeholder={t("pickup.customPlaceholder")}
                 className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
 
-          {/* Location */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-semibold text-foreground">County</label>
+              <label className="block text-sm font-semibold text-foreground">{t("pickup.county")}</label>
               <select
                 value={county} onChange={(e) => setCounty(e.target.value)} required
                 className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                <option value="">Select county…</option>
+                <option value="">{t("pickup.selectCounty")}</option>
                 {COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-foreground">Address (optional)</label>
+              <label className="block text-sm font-semibold text-foreground">{t("pickup.address")}</label>
               <input
                 value={address} onChange={(e) => setAddress(e.target.value)}
-                placeholder="Street, number"
+                placeholder={t("pickup.addressPlaceholder")}
                 className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
@@ -116,7 +113,7 @@ function NewPickup() {
             type="submit" disabled={!canContinue}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            See offers <ArrowRight className="h-4 w-4" />
+            {t("pickup.seeOffers")} <ArrowRight className="h-4 w-4" />
           </button>
         </form>
       </div>
