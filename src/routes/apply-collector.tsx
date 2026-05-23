@@ -81,13 +81,11 @@ function ApplyCollectorPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...parsed.data,
-          counties: parsed.data.counties
-            .split(",")
-            .map((c) => c.trim())
-            .filter(Boolean),
-          submittedAt: new Date().toISOString(),
-          source: "e-return-web",
+          company_name: parsed.data.companyName,
+          contact_person: parsed.data.contactPerson,
+          email: parsed.data.email,
+          phone: parsed.data.phone,
+          counties: parsed.data.counties,
         }),
       });
       toast.success(t("apply.success"));
