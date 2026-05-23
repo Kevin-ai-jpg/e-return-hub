@@ -160,6 +160,9 @@ function Nav() {
               <Link to="/vouchers" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
                 {t("nav.vouchers")}
               </Link>
+              <Link to="/settings" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+                Settings
+              </Link>
             </>
           )}
           {user ? (
