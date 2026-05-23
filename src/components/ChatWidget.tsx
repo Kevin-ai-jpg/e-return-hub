@@ -67,26 +67,32 @@ export function ChatWidget() {
         body: JSON.stringify({
           sessionId: getSessionId(),
           userId,
-          message: text,
-          history: nextHistory.map((m) => ({ role: m.role, content: m.content })),
+          chat_history: messages.map((m) => ({ role: m.role, content: m.content })),
+          fresh_text: text,
         }),
       });
 
-      if (!resp.ok) throw new Error(`Webhook returned ${resp.status}`);
-
-      const raw = await resp.text();
-      let reply = "";
-      try {
-        const json = JSON.parse(raw);
-        reply =
-          json.reply ??
-          json.output ??
-          json.message ??
-          json.text ??
-          (typeof json === "string" ? json : JSON.stringify(json));
-      } catch {
-        reply = raw;
+      if (!resp.ok) {
+        const errBody = await resp.text();
+        let errMsg = `Chat API returned ${resp.status}`;
+        try {
+          const errJson = JSON.parse(errBody);
+          if (errJson.error) errMsg = errJson.error;
+        } catch {
+          if (errBody) errMsg = errBody;
+        }
+        throw new Error(errMsg);
       }
+
+      const json = JSON.parse(await resp.text()) as Record<string, unknown>;
+      if (json.error) throw new Error(String(json.error));
+      const reply =
+        (json.response as string | undefined) ??
+        (json.reply as string | undefined) ??
+        (json.output as string | undefined) ??
+        (json.message as string | undefined) ??
+        (json.text as string | undefined) ??
+        JSON.stringify(json);
 
       setMessages((prev) => [
         ...prev,
