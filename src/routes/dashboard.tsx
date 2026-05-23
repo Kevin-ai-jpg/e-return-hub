@@ -17,7 +17,7 @@ type DashboardSummary = {
     id: string;
     label: string;
     date: string;
-    status: "pending" | "active" | "done";
+    status: "pending" | "accepted" | "completed" | "active";
   }>;
 };
 
