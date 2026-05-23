@@ -132,23 +132,23 @@ function Landing() {
                 {t("landing.partners.desc")}
               </p>
             </div>
-            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-5 items-center">
               {partners.map((p) => (
-                <div
+                <a
                   key={p.id}
-                  title={p.company_name}
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-4 transition hover:border-accent hover:shadow-md"
+                  href={p.website_url ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={p.name}
+                  className="group flex h-24 items-center justify-center rounded-xl border border-border bg-card p-4 transition hover:border-accent hover:shadow-md"
                 >
                   <img
                     src={p.logo_url ?? ""}
-                    alt={p.company_name}
+                    alt={p.name}
                     loading="lazy"
-                    className="h-14 w-14 rounded-full object-cover"
+                    className="max-h-12 max-w-[140px] object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
                   />
-                  <span className="line-clamp-2 text-center text-xs font-medium text-foreground">
-                    {p.company_name}
-                  </span>
-                </div>
+                </a>
               ))}
             </div>
           </div>
