@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/i18n/LanguageProvider";
 import { ensureUserProfile } from "@/lib/ensureUserProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -33,6 +34,7 @@ function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { data: role, isLoading: roleLoading } = useUserRole();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,8 +43,9 @@ function LoginPage() {
   const submittingRef = useRef(false);
 
   useEffect(() => {
-    if (!authLoading && user) navigate({ to: "/dashboard" });
-  }, [authLoading, user, navigate]);
+    if (authLoading || roleLoading || !user) return;
+    navigate({ to: role === "admin" ? "/p4-dashboard" : "/dashboard" });
+  }, [authLoading, roleLoading, user, role, navigate]);
 
   useEffect(() => {
     const s = readLockout();
@@ -95,6 +98,19 @@ function LoginPage() {
     }
     setLoading(false);
     submittingRef.current = false;
+
+    // Redirect admins straight to the admin dashboard
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (profile?.role === "admin") {
+        navigate({ to: "/p4-dashboard" });
+        return;
+      }
+    }
     navigate({ to: "/dashboard" });
   };
 

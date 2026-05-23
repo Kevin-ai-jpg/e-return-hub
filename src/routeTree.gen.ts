@@ -12,10 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as SetupPasswordRouteImport } from './routes/setup-password'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as P4PreviewRouteImport } from './routes/p4-preview'
+import { Route as P4PipelineRouteImport } from './routes/p4-pipeline'
+import { Route as P4DashboardRouteImport } from './routes/p4-dashboard'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectorRouteImport } from './routes/collector'
 import { Route as ApplyCollectorRouteImport } from './routes/apply-collector'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CollectorIndexRouteImport } from './routes/collector.index'
 import { Route as PickupOffersRouteImport } from './routes/pickup.offers'
@@ -42,6 +47,21 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const P4PreviewRoute = P4PreviewRouteImport.update({
+  id: '/p4-preview',
+  path: '/p4-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const P4PipelineRoute = P4PipelineRouteImport.update({
+  id: '/p4-pipeline',
+  path: '/p4-pipeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const P4DashboardRoute = P4DashboardRouteImport.update({
+  id: '/p4-dashboard',
+  path: '/p4-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -60,6 +80,16 @@ const CollectorRoute = CollectorRouteImport.update({
 const ApplyCollectorRoute = ApplyCollectorRouteImport.update({
   id: '/apply-collector',
   path: '/apply-collector',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -115,10 +145,15 @@ const CollectorCampaignsRoute = CollectorCampaignsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/p4-dashboard': typeof P4DashboardRoute
+  '/p4-pipeline': typeof P4PipelineRoute
+  '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
@@ -134,9 +169,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/p4-dashboard': typeof P4DashboardRoute
+  '/p4-pipeline': typeof P4PipelineRoute
+  '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
@@ -153,10 +193,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/p4-dashboard': typeof P4DashboardRoute
+  '/p4-pipeline': typeof P4PipelineRoute
+  '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
@@ -174,10 +219,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
+    | '/admin'
     | '/apply-collector'
     | '/collector'
     | '/dashboard'
     | '/login'
+    | '/p4-dashboard'
+    | '/p4-pipeline'
+    | '/p4-preview'
     | '/register'
     | '/setup-password'
     | '/vouchers'
@@ -193,9 +243,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
+    | '/admin'
     | '/apply-collector'
     | '/dashboard'
     | '/login'
+    | '/p4-dashboard'
+    | '/p4-pipeline'
+    | '/p4-preview'
     | '/register'
     | '/setup-password'
     | '/vouchers'
@@ -211,10 +266,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
+    | '/admin'
     | '/apply-collector'
     | '/collector'
     | '/dashboard'
     | '/login'
+    | '/p4-dashboard'
+    | '/p4-pipeline'
+    | '/p4-preview'
     | '/register'
     | '/setup-password'
     | '/vouchers'
@@ -231,10 +291,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
+  AdminRoute: typeof AdminRoute
   ApplyCollectorRoute: typeof ApplyCollectorRoute
   CollectorRoute: typeof CollectorRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  P4DashboardRoute: typeof P4DashboardRoute
+  P4PipelineRoute: typeof P4PipelineRoute
+  P4PreviewRoute: typeof P4PreviewRoute
   RegisterRoute: typeof RegisterRoute
   SetupPasswordRoute: typeof SetupPasswordRoute
   VouchersRoute: typeof VouchersRoute
@@ -265,6 +330,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p4-preview': {
+      id: '/p4-preview'
+      path: '/p4-preview'
+      fullPath: '/p4-preview'
+      preLoaderRoute: typeof P4PreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p4-pipeline': {
+      id: '/p4-pipeline'
+      path: '/p4-pipeline'
+      fullPath: '/p4-pipeline'
+      preLoaderRoute: typeof P4PipelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p4-dashboard': {
+      id: '/p4-dashboard'
+      path: '/p4-dashboard'
+      fullPath: '/p4-dashboard'
+      preLoaderRoute: typeof P4DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -291,6 +377,20 @@ declare module '@tanstack/react-router' {
       path: '/apply-collector'
       fullPath: '/apply-collector'
       preLoaderRoute: typeof ApplyCollectorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -392,10 +492,15 @@ const CollectorRouteWithChildren = CollectorRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
+  AdminRoute: AdminRoute,
   ApplyCollectorRoute: ApplyCollectorRoute,
   CollectorRoute: CollectorRouteWithChildren,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  P4DashboardRoute: P4DashboardRoute,
+  P4PipelineRoute: P4PipelineRoute,
+  P4PreviewRoute: P4PreviewRoute,
   RegisterRoute: RegisterRoute,
   SetupPasswordRoute: SetupPasswordRoute,
   VouchersRoute: VouchersRoute,

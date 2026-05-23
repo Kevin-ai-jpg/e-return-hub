@@ -1,0 +1,206 @@
+import "leaflet/dist/leaflet.css";
+
+import L from "leaflet";
+import { useEffect, useState } from "react";
+import { fetchCollectionPointsFromSupabase } from "./p4SupabaseData";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { Clock, MapPin, Recycle, Star } from "lucide-react";
+import { CollectionPoint } from "../data/mockCollectionPoints";
+
+type LoadState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ok"; points: CollectionPoint[] };
+
+type CollectionMapProps = {
+  points?: CollectionPoint[];
+  selectedDeeeType?: string;
+  height?: string;
+  useSupabaseData?: boolean;
+  onPointClick?: (point: CollectionPoint) => void;
+};
+
+function createCompanyIcon(color: string) {
+  return L.divIcon({
+    className: "",
+    html: `
+      <div style="
+        width: 28px;
+        height: 28px;
+        background: ${color};
+        border: 3px solid white;
+        border-radius: 9999px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      "></div>
+    `,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  });
+}
+
+function formatPickupMethod(method: CollectionPoint["pickupMethods"]) {
+  if (method === "home") return "Home pickup";
+  if (method === "dropoff") return "Drop-off only";
+  return "Home pickup + drop-off";
+}
+
+export function CollectionMap({
+  points,
+  selectedDeeeType = "all",
+  height = "420px",
+  useSupabaseData = true,
+  onPointClick,
+}: CollectionMapProps) {
+  const [loadState, setLoadState] = useState<LoadState>(
+    points ? { status: "ok", points } : { status: "loading" },
+  );
+
+  useEffect(() => {
+    if (!useSupabaseData || points) return;
+
+    let isMounted = true;
+    setLoadState({ status: "loading" });
+
+    fetchCollectionPointsFromSupabase()
+      .then((fetched) => {
+        if (isMounted) setLoadState({ status: "ok", points: fetched });
+      })
+      .catch((err) => {
+        if (isMounted)
+          setLoadState({
+            status: "error",
+            message: err instanceof Error ? err.message : String(err),
+          });
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [points, useSupabaseData]);
+
+  const sourcePoints = loadState.status === "ok" ? loadState.points : [];
+  const filteredPoints =
+    selectedDeeeType === "all"
+      ? sourcePoints
+      : sourcePoints.filter((p) => p.deeeTypes.includes(selectedDeeeType));
+
+  return (
+    <section className="rounded-2xl border border-green-100 bg-white p-4 shadow-sm">
+      <div className="mb-4 flex flex-col gap-1">
+        <h2 className="text-xl font-bold text-green-900">
+          Collection Points Map
+        </h2>
+        <p className="text-sm text-gray-600">
+          Colored pins show nearby licensed collectors and drop-off locations.
+        </p>
+        {loadState.status === "loading" && (
+          <p className="mt-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800">
+            Loading collection points from Supabase...
+          </p>
+        )}
+        {loadState.status === "error" && (
+          <p className="mt-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
+            Failed to load: {loadState.message}
+          </p>
+        )}
+        {loadState.status === "ok" && (
+          <p className="mt-2 rounded-xl bg-green-50 px-3 py-2 text-sm font-semibold text-green-800">
+            Live data · Supabase · {filteredPoints.length} point{filteredPoints.length !== 1 ? "s" : ""}
+          </p>
+        )}
+      </div>
+
+      <div
+        className="isolate overflow-hidden rounded-2xl border border-green-100"
+        style={{ height }}
+      >
+        <MapContainer
+          center={[47.2, 23.15]}
+          zoom={7}
+          scrollWheelZoom={true}
+          className="h-full w-full"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+
+          {filteredPoints.map((point) => (
+            <Marker
+              key={point.id}
+              position={[point.lat, point.lng]}
+              icon={createCompanyIcon(point.companyColor)}
+            >
+              <Popup>
+                <div className="min-w-[220px] space-y-2">
+                  <div>
+                    {onPointClick ? (
+                      <button
+                        type="button"
+                        onClick={() => onPointClick(point)}
+                        className="text-left text-base font-bold text-green-900 hover:underline"
+                      >
+                        {point.name}
+                      </button>
+                    ) : (
+                      <p className="text-base font-bold text-green-900">{point.name}</p>
+                    )}
+                    <p className="text-sm font-medium text-gray-700">
+                      {point.companyName}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                    <Star size={14} className="text-yellow-500" />
+                    <span>{point.rating.toFixed(1)} rating</span>
+                  </div>
+
+                  <div className="flex items-start gap-1 text-sm text-gray-700">
+                    <MapPin size={14} className="mt-0.5 text-green-700" />
+                    <span>{point.address}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                    <Clock size={14} className="text-green-700" />
+                    <span>{point.schedule}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                    <Recycle size={14} className="text-green-700" />
+                    <span>{formatPickupMethod(point.pickupMethods)}</span>
+                  </div>
+
+                  <div className="pt-1">
+                    <p className="mb-1 text-xs font-semibold text-gray-500">
+                      Accepted DEEE types
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {point.deeeTypes.map((type: string) => (
+                        <span
+                          key={type}
+                          className="rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-800"
+                        >
+                          {type}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {onPointClick && (
+                    <button
+                      type="button"
+                      onClick={() => onPointClick(point)}
+                      className="mt-2 w-full rounded-md bg-green-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-800"
+                    >
+                      View this collector's offer →
+                    </button>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+    </section>
+  );
+}
