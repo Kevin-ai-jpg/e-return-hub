@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Package, Ticket, Leaf, ArrowRight, Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/i18n/LanguageProvider";
+import { PickupQRCode } from "@/integrations/PickupQRCode";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
