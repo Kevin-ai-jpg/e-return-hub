@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, type ComponentType } from "react";
-import { Smartphone, Laptop, Tv, Refrigerator, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import { Smartphone, Laptop, Tv, Refrigerator, ArrowRight, ArrowLeft, Loader2, Home, MapPin } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/pickup/new")({
@@ -21,12 +21,15 @@ const COUNTIES = [
   "Galați", "Iași", "Ilfov", "Mureș", "Prahova", "Sibiu", "Timiș",
 ];
 
+type PickupMode = "home" | "dropoff";
+
 function NewPickup() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [deeeType, setDeeeType] = useState<string>("");
   const [county, setCounty] = useState<string>("");
   const [address, setAddress] = useState<string>("");
+  const [pickupMode, setPickupMode] = useState<PickupMode>("home");
   const [CollectionMap, setCollectionMap] = useState<ComponentType<{
     selectedDeeeType?: string;
     height?: string;
@@ -34,30 +37,26 @@ function NewPickup() {
 
   useEffect(() => {
     let mounted = true;
-
     import("@/integrations/CollectionMap")
-      .then((module) => {
-        if (mounted) {
-          setCollectionMap(() => module.CollectionMap);
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to load collection map:", error);
-      });
-
-    return () => {
-      mounted = false;
-    };
+      .then((module) => { if (mounted) setCollectionMap(() => module.CollectionMap); })
+      .catch((error) => console.error("Failed to load collection map:", error));
+    return () => { mounted = false; };
   }, []);
 
-  const canContinue = deeeType && county;
+  const addressRequired = pickupMode === "home";
+  const canContinue =
+    Boolean(deeeType && county) && (!addressRequired || address.trim().length > 2);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canContinue) return;
     navigate({
       to: "/pickup/offers",
-      search: { deeeType, county, address: address || undefined },
+      search: {
+        deeeType,
+        county,
+        address: addressRequired ? address : undefined,
+      },
     });
   };
 
@@ -110,6 +109,45 @@ function NewPickup() {
             </div>
           </div>
 
+          {/* Pickup mode */}
+          <div>
+            <label className="block text-sm font-semibold text-foreground">
+              How would you like to hand over your DEEE?
+            </label>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setPickupMode("home")}
+                className={`flex items-start gap-3 rounded-xl border-2 p-4 text-left transition ${
+                  pickupMode === "home"
+                    ? "border-primary bg-secondary"
+                    : "border-border bg-background hover:border-accent"
+                }`}
+              >
+                <Home className={`h-6 w-6 shrink-0 ${pickupMode === "home" ? "text-primary" : "text-muted-foreground"}`} />
+                <div>
+                  <div className="text-sm font-semibold text-foreground">Pick up from my address</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">A collector comes to your address on a scheduled date.</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPickupMode("dropoff")}
+                className={`flex items-start gap-3 rounded-xl border-2 p-4 text-left transition ${
+                  pickupMode === "dropoff"
+                    ? "border-primary bg-secondary"
+                    : "border-border bg-background hover:border-accent"
+                }`}
+              >
+                <MapPin className={`h-6 w-6 shrink-0 ${pickupMode === "dropoff" ? "text-primary" : "text-muted-foreground"}`} />
+                <div>
+                  <div className="text-sm font-semibold text-foreground">Drop off at a collection point</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">Bring it yourself to one of the points shown below.</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-semibold text-foreground">{t("pickup.county")}</label>
@@ -122,12 +160,20 @@ function NewPickup() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-foreground">{t("pickup.address")}</label>
+              <label className="block text-sm font-semibold text-foreground">
+                {t("pickup.address")}
+                {addressRequired && <span className="ml-1 text-destructive">*</span>}
+              </label>
               <input
                 value={address} onChange={(e) => setAddress(e.target.value)}
                 placeholder={t("pickup.addressPlaceholder")}
-                className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                disabled={!addressRequired}
+                required={addressRequired}
+                className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
               />
+              {!addressRequired && (
+                <p className="mt-1 text-xs text-muted-foreground">Not needed for drop-off.</p>
+              )}
             </div>
           </div>
 
@@ -140,15 +186,17 @@ function NewPickup() {
         </form>
       </div>
 
-      <div className="mt-8">
-        {CollectionMap ? (
-          <CollectionMap selectedDeeeType={deeeType || "all"} height="380px" />
-        ) : (
-          <div className="flex h-[380px] items-center justify-center rounded-2xl border border-border bg-card text-sm text-muted-foreground">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading map…
-          </div>
-        )}
-      </div>
+      {pickupMode === "dropoff" && (
+        <div className="mt-8">
+          {CollectionMap ? (
+            <CollectionMap selectedDeeeType={deeeType || "all"} height="380px" />
+          ) : (
+            <div className="flex h-[380px] items-center justify-center rounded-2xl border border-border bg-card text-sm text-muted-foreground">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading map…
+            </div>
+          )}
+        </div>
+      )}
     </main>
   );
 }
