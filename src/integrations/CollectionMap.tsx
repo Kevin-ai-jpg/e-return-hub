@@ -185,6 +185,16 @@ export function CollectionMap({
                       ))}
                     </div>
                   </div>
+
+                  {onPointClick && (
+                    <button
+                      type="button"
+                      onClick={() => onPointClick(point)}
+                      className="mt-2 w-full rounded-md bg-green-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-800"
+                    >
+                      View this collector's offer →
+                    </button>
+                  )}
                 </div>
               </Popup>
             </Marker>
