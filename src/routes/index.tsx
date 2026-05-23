@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Recycle, Coins, Shield, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Recycle, Coins, Shield, MapPin, QrCode } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/")({
