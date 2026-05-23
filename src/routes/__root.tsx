@@ -203,6 +203,7 @@ function RootComponent() {
           <Nav />
           <Outlet />
         </div>
+        <VoucherRealtimeListener />
         <ChatWidget />
         <Toaster />
       </LanguageProvider>
