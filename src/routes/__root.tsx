@@ -149,7 +149,7 @@ function Nav() {
               </Link>
             </>
           )}
-          {user && !isCollector && (
+          {user && !isCollector && role !== "admin" && (
             <>
               <Link to="/dashboard" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
                 {t("nav.dashboard")}
@@ -160,10 +160,15 @@ function Nav() {
               <Link to="/vouchers" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
                 {t("nav.vouchers")}
               </Link>
-              <Link to="/settings" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
-                Settings
+              <Link to="/account" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+                Account
               </Link>
             </>
+          )}
+          {user && role === "admin" && (
+            <Link to="/admin" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">
+              Admin
+            </Link>
           )}
           {user ? (
             <>
