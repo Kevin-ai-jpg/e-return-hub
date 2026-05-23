@@ -10,17 +10,30 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VouchersRouteImport } from './routes/vouchers'
+import { Route as SetupPasswordRouteImport } from './routes/setup-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectorRouteImport } from './routes/collector'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CollectorIndexRouteImport } from './routes/collector.index'
 import { Route as PickupOffersRouteImport } from './routes/pickup.offers'
 import { Route as PickupNewRouteImport } from './routes/pickup.new'
+import { Route as CollectorPointsRouteImport } from './routes/collector.points'
+import { Route as CollectorPickupsRouteImport } from './routes/collector.pickups'
+import { Route as CollectorOffersRouteImport } from './routes/collector.offers'
+import { Route as CollectorDashboardRouteImport } from './routes/collector.dashboard'
+import { Route as CollectorCompanyRouteImport } from './routes/collector.company'
+import { Route as CollectorCampaignsRouteImport } from './routes/collector.campaigns'
 
 const VouchersRoute = VouchersRouteImport.update({
   id: '/vouchers',
   path: '/vouchers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupPasswordRoute = SetupPasswordRouteImport.update({
+  id: '/setup-password',
+  path: '/setup-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -48,6 +61,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectorIndexRoute = CollectorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CollectorRoute,
+} as any)
 const PickupOffersRoute = PickupOffersRouteImport.update({
   id: '/pickup/offers',
   path: '/pickup/offers',
@@ -58,37 +76,90 @@ const PickupNewRoute = PickupNewRouteImport.update({
   path: '/pickup/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectorPointsRoute = CollectorPointsRouteImport.update({
+  id: '/points',
+  path: '/points',
+  getParentRoute: () => CollectorRoute,
+} as any)
+const CollectorPickupsRoute = CollectorPickupsRouteImport.update({
+  id: '/pickups',
+  path: '/pickups',
+  getParentRoute: () => CollectorRoute,
+} as any)
+const CollectorOffersRoute = CollectorOffersRouteImport.update({
+  id: '/offers',
+  path: '/offers',
+  getParentRoute: () => CollectorRoute,
+} as any)
+const CollectorDashboardRoute = CollectorDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => CollectorRoute,
+} as any)
+const CollectorCompanyRoute = CollectorCompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => CollectorRoute,
+} as any)
+const CollectorCampaignsRoute = CollectorCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => CollectorRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/collector': typeof CollectorRoute
+  '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
+  '/collector/campaigns': typeof CollectorCampaignsRoute
+  '/collector/company': typeof CollectorCompanyRoute
+  '/collector/dashboard': typeof CollectorDashboardRoute
+  '/collector/offers': typeof CollectorOffersRoute
+  '/collector/pickups': typeof CollectorPickupsRoute
+  '/collector/points': typeof CollectorPointsRoute
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
+  '/collector/': typeof CollectorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
+  '/collector/campaigns': typeof CollectorCampaignsRoute
+  '/collector/company': typeof CollectorCompanyRoute
+  '/collector/dashboard': typeof CollectorDashboardRoute
+  '/collector/offers': typeof CollectorOffersRoute
+  '/collector/pickups': typeof CollectorPickupsRoute
+  '/collector/points': typeof CollectorPointsRoute
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
+  '/collector': typeof CollectorIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/collector': typeof CollectorRoute
+  '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/setup-password': typeof SetupPasswordRoute
   '/vouchers': typeof VouchersRoute
+  '/collector/campaigns': typeof CollectorCampaignsRoute
+  '/collector/company': typeof CollectorCompanyRoute
+  '/collector/dashboard': typeof CollectorDashboardRoute
+  '/collector/offers': typeof CollectorOffersRoute
+  '/collector/pickups': typeof CollectorPickupsRoute
+  '/collector/points': typeof CollectorPointsRoute
   '/pickup/new': typeof PickupNewRoute
   '/pickup/offers': typeof PickupOffersRoute
+  '/collector/': typeof CollectorIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -98,19 +169,34 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/setup-password'
     | '/vouchers'
+    | '/collector/campaigns'
+    | '/collector/company'
+    | '/collector/dashboard'
+    | '/collector/offers'
+    | '/collector/pickups'
+    | '/collector/points'
     | '/pickup/new'
     | '/pickup/offers'
+    | '/collector/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/collector'
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/setup-password'
     | '/vouchers'
+    | '/collector/campaigns'
+    | '/collector/company'
+    | '/collector/dashboard'
+    | '/collector/offers'
+    | '/collector/pickups'
+    | '/collector/points'
     | '/pickup/new'
     | '/pickup/offers'
+    | '/collector'
   id:
     | '__root__'
     | '/'
@@ -118,17 +204,26 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/setup-password'
     | '/vouchers'
+    | '/collector/campaigns'
+    | '/collector/company'
+    | '/collector/dashboard'
+    | '/collector/offers'
+    | '/collector/pickups'
+    | '/collector/points'
     | '/pickup/new'
     | '/pickup/offers'
+    | '/collector/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CollectorRoute: typeof CollectorRoute
+  CollectorRoute: typeof CollectorRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  SetupPasswordRoute: typeof SetupPasswordRoute
   VouchersRoute: typeof VouchersRoute
   PickupNewRoute: typeof PickupNewRoute
   PickupOffersRoute: typeof PickupOffersRoute
@@ -141,6 +236,13 @@ declare module '@tanstack/react-router' {
       path: '/vouchers'
       fullPath: '/vouchers'
       preLoaderRoute: typeof VouchersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup-password': {
+      id: '/setup-password'
+      path: '/setup-password'
+      fullPath: '/setup-password'
+      preLoaderRoute: typeof SetupPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -178,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collector/': {
+      id: '/collector/'
+      path: '/'
+      fullPath: '/collector/'
+      preLoaderRoute: typeof CollectorIndexRouteImport
+      parentRoute: typeof CollectorRoute
+    }
     '/pickup/offers': {
       id: '/pickup/offers'
       path: '/pickup/offers'
@@ -192,15 +301,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PickupNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collector/points': {
+      id: '/collector/points'
+      path: '/points'
+      fullPath: '/collector/points'
+      preLoaderRoute: typeof CollectorPointsRouteImport
+      parentRoute: typeof CollectorRoute
+    }
+    '/collector/pickups': {
+      id: '/collector/pickups'
+      path: '/pickups'
+      fullPath: '/collector/pickups'
+      preLoaderRoute: typeof CollectorPickupsRouteImport
+      parentRoute: typeof CollectorRoute
+    }
+    '/collector/offers': {
+      id: '/collector/offers'
+      path: '/offers'
+      fullPath: '/collector/offers'
+      preLoaderRoute: typeof CollectorOffersRouteImport
+      parentRoute: typeof CollectorRoute
+    }
+    '/collector/dashboard': {
+      id: '/collector/dashboard'
+      path: '/dashboard'
+      fullPath: '/collector/dashboard'
+      preLoaderRoute: typeof CollectorDashboardRouteImport
+      parentRoute: typeof CollectorRoute
+    }
+    '/collector/company': {
+      id: '/collector/company'
+      path: '/company'
+      fullPath: '/collector/company'
+      preLoaderRoute: typeof CollectorCompanyRouteImport
+      parentRoute: typeof CollectorRoute
+    }
+    '/collector/campaigns': {
+      id: '/collector/campaigns'
+      path: '/campaigns'
+      fullPath: '/collector/campaigns'
+      preLoaderRoute: typeof CollectorCampaignsRouteImport
+      parentRoute: typeof CollectorRoute
+    }
   }
 }
 
+interface CollectorRouteChildren {
+  CollectorCampaignsRoute: typeof CollectorCampaignsRoute
+  CollectorCompanyRoute: typeof CollectorCompanyRoute
+  CollectorDashboardRoute: typeof CollectorDashboardRoute
+  CollectorOffersRoute: typeof CollectorOffersRoute
+  CollectorPickupsRoute: typeof CollectorPickupsRoute
+  CollectorPointsRoute: typeof CollectorPointsRoute
+  CollectorIndexRoute: typeof CollectorIndexRoute
+}
+
+const CollectorRouteChildren: CollectorRouteChildren = {
+  CollectorCampaignsRoute: CollectorCampaignsRoute,
+  CollectorCompanyRoute: CollectorCompanyRoute,
+  CollectorDashboardRoute: CollectorDashboardRoute,
+  CollectorOffersRoute: CollectorOffersRoute,
+  CollectorPickupsRoute: CollectorPickupsRoute,
+  CollectorPointsRoute: CollectorPointsRoute,
+  CollectorIndexRoute: CollectorIndexRoute,
+}
+
+const CollectorRouteWithChildren = CollectorRoute._addFileChildren(
+  CollectorRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CollectorRoute: CollectorRoute,
+  CollectorRoute: CollectorRouteWithChildren,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  SetupPasswordRoute: SetupPasswordRoute,
   VouchersRoute: VouchersRoute,
   PickupNewRoute: PickupNewRoute,
   PickupOffersRoute: PickupOffersRoute,
