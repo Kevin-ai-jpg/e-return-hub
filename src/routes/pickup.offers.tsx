@@ -119,18 +119,25 @@ function CompanyAvatar({ name, logoUrl }: { name: string; logoUrl: string | null
 }
 
 function OfferCard({
-  offer, isBest, onSelect,
+  offer, isBest, highlighted, onSelect,
 }: {
-  offer: OfferRow; isBest: boolean; onSelect: () => void;
+  offer: OfferRow; isBest: boolean; highlighted?: boolean; onSelect: () => void;
 }) {
   const { t } = useTranslation();
   const company = offer.collectors;
   const rating = company?.rating ?? 0;
 
   return (
-    <article className={`relative rounded-2xl border-2 bg-card p-6 transition hover:shadow-md ${
-      isBest ? "border-primary/40" : "border-border hover:border-accent"
-    }`}>
+    <article
+      id={offer.collector_id ? `offer-${offer.collector_id}` : undefined}
+      className={`relative rounded-2xl border-2 bg-card p-6 transition hover:shadow-md ${
+        highlighted
+          ? "border-primary ring-4 ring-primary/30"
+          : isBest
+            ? "border-primary/40"
+            : "border-border hover:border-accent"
+      }`}
+    >
       {isBest && (
         <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary-foreground shadow-sm">
           {t("offers.best")}
