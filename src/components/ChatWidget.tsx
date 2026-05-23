@@ -21,12 +21,14 @@ function getSessionId(): string {
 }
 
 export function ChatWidget() {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const suggestions = [t("chat.suggest1"), t("chat.suggest2"), t("chat.suggest3")];
 
   useEffect(() => {
     if (open && scrollRef.current) {
@@ -89,7 +91,7 @@ export function ChatWidget() {
       ]);
     } catch (err) {
       console.error("[ChatWidget]", err);
-      toast.error("Asistentul nu răspunde, încearcă din nou.");
+      toast.error(t("chat.error"));
       // Roll back user message so they can retry
       setMessages((prev) => prev.filter((m) => m.id !== userMsg.id));
       setInput(text);
@@ -105,7 +107,7 @@ export function ChatWidget() {
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-5 right-5 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition hover:scale-105 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
-          aria-label="Open AI assistant"
+          aria-label={t("chat.open")}
         >
           <MessageCircle className="h-6 w-6" />
           <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/30" />
@@ -121,7 +123,7 @@ export function ChatWidget() {
               : "bottom-5 right-5 h-[560px] w-[380px] rounded-2xl"
           }`}
           role="dialog"
-          aria-label="AI assistant"
+          aria-label={t("chat.title")}
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-primary-foreground">
@@ -130,14 +132,14 @@ export function ChatWidget() {
                 <Leaf className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-semibold leading-tight">Asistent e-Return</p>
-                <p className="text-[11px] text-primary-foreground/80">Powered by AI</p>
+                <p className="text-sm font-semibold leading-tight">{t("chat.title")}</p>
+                <p className="text-[11px] text-primary-foreground/80">{t("chat.poweredBy")}</p>
               </div>
             </div>
             <button
               onClick={() => setOpen(false)}
               className="rounded-md p-1.5 text-primary-foreground/80 transition hover:bg-primary-foreground/10 hover:text-primary-foreground"
-              aria-label="Close"
+              aria-label={t("chat.close")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -151,11 +153,10 @@ export function ChatWidget() {
             {messages.length === 0 && (
               <div className="space-y-3">
                 <div className="rounded-2xl rounded-bl-sm bg-secondary px-3.5 py-2.5 text-sm text-secondary-foreground">
-                  Salut! Te ajut să reciclezi corect și să găsești cea mai bună ofertă pentru
-                  DEEE-ul tău. Ce vrei să afli?
+                  {t("chat.welcome")}
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {SUGGESTIONS.map((s) => (
+                  {suggestions.map((s) => (
                     <button
                       key={s}
                       onClick={() => send(s)}
