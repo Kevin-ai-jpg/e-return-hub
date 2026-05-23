@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as P4PreviewRouteImport } from './routes/p4-preview'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectorRouteImport } from './routes/collector'
@@ -26,6 +27,11 @@ const VouchersRoute = VouchersRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const P4PreviewRoute = P4PreviewRouteImport.update({
+  id: '/p4-preview',
+  path: '/p4-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/vouchers': typeof VouchersRoute
   '/pickup/new': typeof PickupNewRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/vouchers': typeof VouchersRoute
   '/pickup/new': typeof PickupNewRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/vouchers': typeof VouchersRoute
   '/pickup/new': typeof PickupNewRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/collector'
     | '/dashboard'
     | '/login'
+    | '/p4-preview'
     | '/register'
     | '/vouchers'
     | '/pickup/new'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/collector'
     | '/dashboard'
     | '/login'
+    | '/p4-preview'
     | '/register'
     | '/vouchers'
     | '/pickup/new'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/collector'
     | '/dashboard'
     | '/login'
+    | '/p4-preview'
     | '/register'
     | '/vouchers'
     | '/pickup/new'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   CollectorRoute: typeof CollectorRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  P4PreviewRoute: typeof P4PreviewRoute
   RegisterRoute: typeof RegisterRoute
   VouchersRoute: typeof VouchersRoute
   PickupNewRoute: typeof PickupNewRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p4-preview': {
+      id: '/p4-preview'
+      path: '/p4-preview'
+      fullPath: '/p4-preview'
+      preLoaderRoute: typeof P4PreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectorRoute: CollectorRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  P4PreviewRoute: P4PreviewRoute,
   RegisterRoute: RegisterRoute,
   VouchersRoute: VouchersRoute,
   PickupNewRoute: PickupNewRoute,
