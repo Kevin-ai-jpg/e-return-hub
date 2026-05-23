@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as P4PreviewRouteImport } from './routes/p4-preview'
+import { Route as P4DashboardRouteImport } from './routes/p4-dashboard'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectorRouteImport } from './routes/collector'
@@ -32,6 +33,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const P4PreviewRoute = P4PreviewRouteImport.update({
   id: '/p4-preview',
   path: '/p4-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const P4DashboardRoute = P4DashboardRouteImport.update({
+  id: '/p4-dashboard',
+  path: '/p4-dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/p4-dashboard': typeof P4DashboardRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/vouchers': typeof VouchersRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/p4-dashboard': typeof P4DashboardRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/vouchers': typeof VouchersRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/collector': typeof CollectorRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/p4-dashboard': typeof P4DashboardRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/vouchers': typeof VouchersRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/collector'
     | '/dashboard'
     | '/login'
+    | '/p4-dashboard'
     | '/p4-preview'
     | '/register'
     | '/vouchers'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/collector'
     | '/dashboard'
     | '/login'
+    | '/p4-dashboard'
     | '/p4-preview'
     | '/register'
     | '/vouchers'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/collector'
     | '/dashboard'
     | '/login'
+    | '/p4-dashboard'
     | '/p4-preview'
     | '/register'
     | '/vouchers'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   CollectorRoute: typeof CollectorRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  P4DashboardRoute: typeof P4DashboardRoute
   P4PreviewRoute: typeof P4PreviewRoute
   RegisterRoute: typeof RegisterRoute
   VouchersRoute: typeof VouchersRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/p4-preview'
       fullPath: '/p4-preview'
       preLoaderRoute: typeof P4PreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p4-dashboard': {
+      id: '/p4-dashboard'
+      path: '/p4-dashboard'
+      fullPath: '/p4-dashboard'
+      preLoaderRoute: typeof P4DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -220,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectorRoute: CollectorRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  P4DashboardRoute: P4DashboardRoute,
   P4PreviewRoute: P4PreviewRoute,
   RegisterRoute: RegisterRoute,
   VouchersRoute: VouchersRoute,
