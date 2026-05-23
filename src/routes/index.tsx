@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Recycle, Coins, Shield, MapPin, QrCode } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/")({
