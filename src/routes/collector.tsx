@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Package, MapPin, Calendar, CheckCircle2, Loader2 } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/collector")({
   component: CollectorView,
@@ -23,6 +24,7 @@ type PickupRow = {
 };
 
 function CollectorView() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
 
   const { data: pickups, isLoading, error } = useQuery({
@@ -42,13 +44,11 @@ function CollectorView() {
     <main className="mx-auto max-w-5xl px-4 py-10">
       <header className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Collector dashboard</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Pending pickup requests assigned to you. Confirm collection with the weight you picked up.
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("collector.title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("collector.subtitle")}</p>
         </div>
         <div className="rounded-lg border border-border bg-card px-4 py-2 text-sm">
-          <span className="text-muted-foreground">Pending: </span>
+          <span className="text-muted-foreground">{t("collector.pending")} </span>
           <span className="font-semibold text-primary">{pickups?.length ?? 0}</span>
         </div>
       </header>
@@ -56,19 +56,19 @@ function CollectorView() {
       <section className="mt-8">
         {isLoading && (
           <div className="flex items-center justify-center py-16 text-muted-foreground">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading requests…
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("collector.loading")}
           </div>
         )}
         {error && (
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-            Failed to load pickup requests.
+            {t("collector.failed")}
           </div>
         )}
         {!isLoading && !error && (pickups?.length ?? 0) === 0 && (
           <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
             <Package className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 text-sm font-medium text-foreground">No pending pickups</p>
-            <p className="mt-1 text-xs text-muted-foreground">New requests will appear here.</p>
+            <p className="mt-3 text-sm font-medium text-foreground">{t("collector.none")}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("collector.noneHint")}</p>
           </div>
         )}
 
@@ -83,12 +83,13 @@ function CollectorView() {
 }
 
 function PickupCard({ pickup, onDone }: { pickup: PickupRow; onDone: () => void }) {
+  const { t } = useTranslation();
   const [kg, setKg] = useState<string>("");
 
   const confirm = useMutation({
     mutationFn: async () => {
       const kgNum = parseFloat(kg);
-      if (!kgNum || kgNum <= 0) throw new Error("Enter a valid weight in kg");
+      if (!kgNum || kgNum <= 0) throw new Error(t("collector.invalidKg"));
 
       const { error: cErr } = await supabase
         .from("collections")
@@ -102,10 +103,10 @@ function PickupCard({ pickup, onDone }: { pickup: PickupRow; onDone: () => void 
       if (uErr) throw uErr;
     },
     onSuccess: () => {
-      toast.success("Collection confirmed", { description: `${kg} kg recorded.` });
+      toast.success(t("collector.confirmed"), { description: t("collector.recorded", { kg }) });
       onDone();
     },
-    onError: (e: Error) => toast.error(e.message || "Could not confirm pickup"),
+    onError: (e: Error) => toast.error(e.message || t("collector.couldNot")),
   });
 
   return (
@@ -118,9 +119,9 @@ function PickupCard({ pickup, onDone }: { pickup: PickupRow; onDone: () => void 
             </span>
             <div>
               <p className="text-base font-semibold capitalize text-foreground">
-                {pickup.deee_type ?? "DEEE"} pickup
+                {t("collector.pickupOf", { type: pickup.deee_type ?? "DEEE" })}
               </p>
-              <p className="text-xs text-muted-foreground">Request #{pickup.id.slice(0, 8)}</p>
+              <p className="text-xs text-muted-foreground">{t("collector.request")} #{pickup.id.slice(0, 8)}</p>
             </div>
           </div>
 
@@ -165,7 +166,7 @@ function PickupCard({ pickup, onDone }: { pickup: PickupRow; onDone: () => void 
             ) : (
               <CheckCircle2 className="h-4 w-4" />
             )}
-            Confirm
+            {t("collector.confirm")}
           </button>
         </div>
       </div>
