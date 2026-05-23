@@ -49,6 +49,7 @@ export function CollectionMap({
   selectedDeeeType = "all",
   height = "420px",
   useSupabaseData = true,
+  onPointClick,
 }: CollectionMapProps) {
   const [loadState, setLoadState] = useState<LoadState>(
     points ? { status: "ok", points } : { status: "loading" },
