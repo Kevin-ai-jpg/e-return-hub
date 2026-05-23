@@ -12,4 +12,17 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  vite: {
+    server: {
+      // Proxies browser requests to a local Flask API (avoids CORS in dev).
+      // Set VITE_CHAT_API_URL=/api/chat in .env when using this proxy.
+      proxy: {
+        "/api/chat": {
+          target: process.env.CHAT_API_PROXY_TARGET ?? "http://127.0.0.1:5000",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/chat/, "/chat"),
+        },
+      },
+    },
+  },
 });

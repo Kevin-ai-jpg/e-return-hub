@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/i18n/LanguageProvider";
+import { ensureUserProfile } from "@/lib/ensureUserProfile";
 
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
@@ -22,7 +23,7 @@ function RegisterPage() {
     setLoading(true);
     setError(null);
     setInfo(null);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -31,11 +32,22 @@ function RegisterPage() {
       },
     });
     setLoading(false);
-    if (error) setError(error.message);
-    else {
-      setInfo(t("auth.confirmEmail"));
-      setTimeout(() => navigate({ to: "/login" }), 1500);
+    if (error) {
+      setError(error.message);
+      return;
     }
+    if (data.session && data.user) {
+      try {
+        await ensureUserProfile(data.user);
+      } catch (profileErr) {
+        setError(profileErr instanceof Error ? profileErr.message : "Could not set up your profile.");
+        return;
+      }
+      navigate({ to: "/dashboard" });
+      return;
+    }
+    setInfo(t("auth.confirmEmail"));
+    setTimeout(() => navigate({ to: "/login" }), 1500);
   };
 
   return (
