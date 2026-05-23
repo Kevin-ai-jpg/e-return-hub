@@ -291,6 +291,10 @@ export const translations: Record<Lang, Dict> = {
     "landing.compliance":
       "Conform reglementărilor DEEE din România · Numai colectori autorizați",
     "landing.cta.strip": "Începe să reciclezi",
+    "landing.map.title": "Găsește un punct de colectare",
+    "landing.map.desc": "Explorează locațiile DEEE autorizate din toată România.",
+    "landing.qr.title": "Deschide pe telefon",
+    "landing.qr.desc": "Scanează codul QR pentru a deschide e-Return pe mobil și a programa o ridicare în câteva secunde.",
 
     // Auth
     "auth.welcomeBack": "Bine ai revenit",
