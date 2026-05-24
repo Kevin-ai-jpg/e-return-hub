@@ -149,6 +149,7 @@ export type Database = {
       collectors: {
         Row: {
           company_name: string
+          county: string | null
           description: string | null
           id: string
           logo_url: string | null
@@ -159,6 +160,7 @@ export type Database = {
         }
         Insert: {
           company_name: string
+          county?: string | null
           description?: string | null
           id?: string
           logo_url?: string | null
@@ -169,6 +171,7 @@ export type Database = {
         }
         Update: {
           company_name?: string
+          county?: string | null
           description?: string | null
           id?: string
           logo_url?: string | null
@@ -281,7 +284,6 @@ export type Database = {
       users: {
         Row: {
           address: string | null
-          county: string | null
           created_at: string | null
           email: string | null
           email_campaigns: boolean | null
@@ -292,7 +294,6 @@ export type Database = {
         }
         Insert: {
           address?: string | null
-          county?: string | null
           created_at?: string | null
           email?: string | null
           email_campaigns?: boolean | null
@@ -303,7 +304,6 @@ export type Database = {
         }
         Update: {
           address?: string | null
-          county?: string | null
           created_at?: string | null
           email?: string | null
           email_campaigns?: boolean | null
