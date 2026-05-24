@@ -80,6 +80,7 @@ function ApplyCollectorPage() {
           email: parsed.data.email,
           phone: parsed.data.phone,
           counties: parsed.data.counties,
+          cui: parsed.data.cui,
         }),
       });
       toast.success(t("apply.success"));
