@@ -204,6 +204,21 @@ function Nav() {
   );
 }
 
+function Footer() {
+  return (
+    <footer className="border-t border-border bg-background">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row">
+        <p>© {new Date().getFullYear()} e-Return. All rights reserved.</p>
+        <nav className="flex items-center gap-4">
+          <Link to="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>
+          <Link to="/gdpr" className="hover:text-foreground hover:underline">GDPR & Privacy</Link>
+          <a href="mailto:contact@e-return.app" className="hover:text-foreground hover:underline">Contact</a>
+        </nav>
+      </div>
+    </footer>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -212,9 +227,12 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="flex min-h-screen flex-col bg-background text-foreground">
           <Nav />
-          <Outlet />
+          <div className="flex-1">
+            <Outlet />
+          </div>
+          <Footer />
         </div>
         <VoucherRealtimeListener />
         {!isAdminRoute && <ChatWidget />}
@@ -223,3 +241,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+

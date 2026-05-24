@@ -15,12 +15,17 @@ function RegisterPage() {
   const [county, setCounty] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!acceptTerms) {
+      setError("You must accept the Terms of Service and Privacy Policy to create an account.");
+      return;
+    }
     setLoading(true);
     setError(null);
     setInfo(null);
@@ -101,6 +106,25 @@ function RegisterPage() {
               className={inputCls}
             />
           </div>
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={acceptTerms}
+              onChange={(e) => setAcceptTerms(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-primary"
+            />
+            <span className="text-muted-foreground">
+              I accept the{" "}
+              <Link to="/terms" target="_blank" className="font-semibold text-primary hover:underline">
+                Terms of Service
+              </Link>{" "}
+              and the{" "}
+              <Link to="/gdpr" target="_blank" className="font-semibold text-primary hover:underline">
+                Privacy Policy (GDPR)
+              </Link>
+              .
+            </span>
+          </label>
           {error && <p className="text-sm text-destructive">{error}</p>}
           {info && <p className="text-sm text-primary">{info}</p>}
           <button
