@@ -191,22 +191,36 @@ export function AdminDashboard() {
                     </div>
                     <BarChart3 className="text-green-800" />
                   </div>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={countyStats}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="county" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar
-                          dataKey="kgCollected"
-                          name="Kg collected"
-                          fill="#4CAF50"
-                          radius={[8, 8, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
+                  {(() => {
+                    const known = countyStats.filter((c) => c.county !== "Unknown");
+                    const data = known.length > 0 ? known : [];
+                    if (data.length === 0) {
+                      return (
+                        <div className="flex h-80 items-center justify-center text-sm text-gray-500">
+                          No county data available yet.
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }} barCategoryGap="25%">
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="county" interval={0} angle={-25} textAnchor="end" height={60} />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar
+                              dataKey="kgCollected"
+                              name="Kg collected"
+                              fill="#4CAF50"
+                              maxBarSize={64}
+                              radius={[8, 8, 0, 0]}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="rounded-2xl border border-green-100 bg-white p-5 shadow-sm">
