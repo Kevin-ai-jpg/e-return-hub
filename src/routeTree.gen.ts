@@ -10,12 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VouchersRouteImport } from './routes/vouchers'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SetupPasswordRouteImport } from './routes/setup-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as P4PreviewRouteImport } from './routes/p4-preview'
 import { Route as P4PipelineRouteImport } from './routes/p4-pipeline'
 import { Route as P4DashboardRouteImport } from './routes/p4-dashboard'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as GdprRouteImport } from './routes/gdpr'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectorRouteImport } from './routes/collector'
 import { Route as ApplyCollectorRouteImport } from './routes/apply-collector'
@@ -35,6 +37,11 @@ import { Route as CollectorCampaignsRouteImport } from './routes/collector.campa
 const VouchersRoute = VouchersRouteImport.update({
   id: '/vouchers',
   path: '/vouchers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SetupPasswordRoute = SetupPasswordRouteImport.update({
@@ -65,6 +72,11 @@ const P4DashboardRoute = P4DashboardRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GdprRoute = GdprRouteImport.update({
+  id: '/gdpr',
+  path: '/gdpr',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -150,12 +162,14 @@ export interface FileRoutesByFullPath {
   '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/gdpr': typeof GdprRoute
   '/login': typeof LoginRoute
   '/p4-dashboard': typeof P4DashboardRoute
   '/p4-pipeline': typeof P4PipelineRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/setup-password': typeof SetupPasswordRoute
+  '/terms': typeof TermsRoute
   '/vouchers': typeof VouchersRoute
   '/collector/campaigns': typeof CollectorCampaignsRoute
   '/collector/company': typeof CollectorCompanyRoute
@@ -173,12 +187,14 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/apply-collector': typeof ApplyCollectorRoute
   '/dashboard': typeof DashboardRoute
+  '/gdpr': typeof GdprRoute
   '/login': typeof LoginRoute
   '/p4-dashboard': typeof P4DashboardRoute
   '/p4-pipeline': typeof P4PipelineRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/setup-password': typeof SetupPasswordRoute
+  '/terms': typeof TermsRoute
   '/vouchers': typeof VouchersRoute
   '/collector/campaigns': typeof CollectorCampaignsRoute
   '/collector/company': typeof CollectorCompanyRoute
@@ -198,12 +214,14 @@ export interface FileRoutesById {
   '/apply-collector': typeof ApplyCollectorRoute
   '/collector': typeof CollectorRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/gdpr': typeof GdprRoute
   '/login': typeof LoginRoute
   '/p4-dashboard': typeof P4DashboardRoute
   '/p4-pipeline': typeof P4PipelineRoute
   '/p4-preview': typeof P4PreviewRoute
   '/register': typeof RegisterRoute
   '/setup-password': typeof SetupPasswordRoute
+  '/terms': typeof TermsRoute
   '/vouchers': typeof VouchersRoute
   '/collector/campaigns': typeof CollectorCampaignsRoute
   '/collector/company': typeof CollectorCompanyRoute
@@ -224,12 +242,14 @@ export interface FileRouteTypes {
     | '/apply-collector'
     | '/collector'
     | '/dashboard'
+    | '/gdpr'
     | '/login'
     | '/p4-dashboard'
     | '/p4-pipeline'
     | '/p4-preview'
     | '/register'
     | '/setup-password'
+    | '/terms'
     | '/vouchers'
     | '/collector/campaigns'
     | '/collector/company'
@@ -247,12 +267,14 @@ export interface FileRouteTypes {
     | '/admin'
     | '/apply-collector'
     | '/dashboard'
+    | '/gdpr'
     | '/login'
     | '/p4-dashboard'
     | '/p4-pipeline'
     | '/p4-preview'
     | '/register'
     | '/setup-password'
+    | '/terms'
     | '/vouchers'
     | '/collector/campaigns'
     | '/collector/company'
@@ -271,12 +293,14 @@ export interface FileRouteTypes {
     | '/apply-collector'
     | '/collector'
     | '/dashboard'
+    | '/gdpr'
     | '/login'
     | '/p4-dashboard'
     | '/p4-pipeline'
     | '/p4-preview'
     | '/register'
     | '/setup-password'
+    | '/terms'
     | '/vouchers'
     | '/collector/campaigns'
     | '/collector/company'
@@ -296,12 +320,14 @@ export interface RootRouteChildren {
   ApplyCollectorRoute: typeof ApplyCollectorRoute
   CollectorRoute: typeof CollectorRouteWithChildren
   DashboardRoute: typeof DashboardRoute
+  GdprRoute: typeof GdprRoute
   LoginRoute: typeof LoginRoute
   P4DashboardRoute: typeof P4DashboardRoute
   P4PipelineRoute: typeof P4PipelineRoute
   P4PreviewRoute: typeof P4PreviewRoute
   RegisterRoute: typeof RegisterRoute
   SetupPasswordRoute: typeof SetupPasswordRoute
+  TermsRoute: typeof TermsRoute
   VouchersRoute: typeof VouchersRoute
   PickupNewRoute: typeof PickupNewRoute
   PickupOffersRoute: typeof PickupOffersRoute
@@ -314,6 +340,13 @@ declare module '@tanstack/react-router' {
       path: '/vouchers'
       fullPath: '/vouchers'
       preLoaderRoute: typeof VouchersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/setup-password': {
@@ -356,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gdpr': {
+      id: '/gdpr'
+      path: '/gdpr'
+      fullPath: '/gdpr'
+      preLoaderRoute: typeof GdprRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -497,12 +537,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApplyCollectorRoute: ApplyCollectorRoute,
   CollectorRoute: CollectorRouteWithChildren,
   DashboardRoute: DashboardRoute,
+  GdprRoute: GdprRoute,
   LoginRoute: LoginRoute,
   P4DashboardRoute: P4DashboardRoute,
   P4PipelineRoute: P4PipelineRoute,
   P4PreviewRoute: P4PreviewRoute,
   RegisterRoute: RegisterRoute,
   SetupPasswordRoute: SetupPasswordRoute,
+  TermsRoute: TermsRoute,
   VouchersRoute: VouchersRoute,
   PickupNewRoute: PickupNewRoute,
   PickupOffersRoute: PickupOffersRoute,
@@ -510,3 +552,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
