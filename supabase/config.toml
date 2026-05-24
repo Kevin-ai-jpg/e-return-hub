@@ -1,1 +1,4 @@
 project_id = "hjyajmnurpjvsafpdipf"
+
+[functions.create-collector]
+verify_jwt = true
