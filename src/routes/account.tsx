@@ -65,7 +65,6 @@ function AccountPage() {
       .update({
         name: profile.name,
         phone: profile.phone,
-        county: profile.county,
         address: profile.address,
       } as never)
       .eq("id", user.id);
