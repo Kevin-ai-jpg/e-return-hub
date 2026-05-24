@@ -228,6 +228,7 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
     vouchersResult,
     collectorsResult,
     usersResult,
+    countyViewResult,
   ] = await Promise.all([
     supabase
       .from("collections")
@@ -238,7 +239,11 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
     supabase.from("vouchers").select("id, value_lei, status, created_at"),
     supabase.from("collectors").select("id, company_name, rating"),
     supabase.from("users").select("id, county"),
+    supabase
+      .from("collections_by_county" as never)
+      .select("county, kg_collected, deee_type, collector_name"),
   ]);
+
 
   if (collectionsResult.error) {
     throw new Error(collectionsResult.error.message);
