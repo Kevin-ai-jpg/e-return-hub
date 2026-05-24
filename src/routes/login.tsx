@@ -99,19 +99,7 @@ function LoginPage() {
     setLoading(false);
     submittingRef.current = false;
 
-    // Redirect admins straight to the admin dashboard
-    if (data.user) {
-      const { data: profile } = await supabase
-        .from("users")
-        .select("role")
-        .eq("id", data.user.id)
-        .maybeSingle();
-      if (profile?.role === "admin") {
-        navigate({ to: "/p4-dashboard" });
-        return;
-      }
-    }
-    navigate({ to: "/dashboard" });
+    navigate({ to: "/" });
   };
 
   const isLocked = lockedUntil > Date.now();
