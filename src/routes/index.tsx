@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Recycle, Coins, Shield, MapPin, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
