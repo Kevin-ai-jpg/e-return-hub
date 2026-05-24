@@ -342,6 +342,10 @@ export function AdminDashboard() {
         <TabsContent value="map" className="pt-2">
           <CollectionMap height="560px" useSupabaseData />
         </TabsContent>
+
+        <TabsContent value="add-collector" className="pt-2">
+          <AddCollectorSection />
+        </TabsContent>
       </Tabs>
     </section>
   );
