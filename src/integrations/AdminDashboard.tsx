@@ -192,8 +192,8 @@ export function AdminDashboard() {
                     <BarChart3 className="text-green-800" />
                   </div>
                   {(() => {
-                    const known = countyStats.filter((c) => c.county !== "Unknown");
-                    const data = known.length > 0 ? known : [];
+                    const data = countyStats;
+
                     if (data.length === 0) {
                       return (
                         <div className="flex h-80 items-center justify-center text-sm text-gray-500">

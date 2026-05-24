@@ -228,6 +228,7 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
     vouchersResult,
     collectorsResult,
     usersResult,
+    countyViewResult,
   ] = await Promise.all([
     supabase
       .from("collections")
@@ -238,7 +239,11 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
     supabase.from("vouchers").select("id, value_lei, status, created_at"),
     supabase.from("collectors").select("id, company_name, rating"),
     supabase.from("users").select("id, county"),
+    supabase
+      .from("collections_by_county" as never)
+      .select("county, kg_collected, deee_type, collector_name"),
   ]);
+
 
   if (collectionsResult.error) {
     throw new Error(collectionsResult.error.message);
@@ -367,9 +372,27 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
       activeCollectors: collectors.length,
       co2AvoidedKg: Math.round(totalKgCollected * 2.5),
     },
-    countyStats: Array.from(countyMap.values())
-      .sort((a, b) => b.kgCollected - a.kgCollected)
-      .slice(0, 10),
+    countyStats: (() => {
+      const viewRows = ((countyViewResult as { data?: DbRow[] | null }).data ?? []) as DbRow[];
+      if (viewRows.length > 0) {
+        const m = new Map<string, CountyStat>();
+        viewRows.forEach((r) => {
+          const county = toString(r.county) || "Unknown";
+          const kg = toNumber(r.kg_collected);
+          const existing = m.get(county) ?? { county, kgCollected: 0, collections: 0 };
+          existing.kgCollected += kg;
+          existing.collections += 1;
+          m.set(county, existing);
+        });
+        return Array.from(m.values())
+          .sort((a, b) => b.kgCollected - a.kgCollected)
+          .slice(0, 10);
+      }
+      return Array.from(countyMap.values())
+        .sort((a, b) => b.kgCollected - a.kgCollected)
+        .slice(0, 10);
+    })(),
+
     monthlyTrend: Array.from(monthMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([, value]) => value),

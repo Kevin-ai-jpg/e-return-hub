@@ -367,7 +367,34 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      collections_by_county: {
+        Row: {
+          collector_id: string | null
+          collector_name: string | null
+          confirmed_at: string | null
+          county: string | null
+          deee_type: string | null
+          id: string | null
+          kg_collected: number | null
+          pickup_request_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collections_pickup_request_id_fkey"
+            columns: ["pickup_request_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pickup_requests_collector_id_fkey"
+            columns: ["collector_id"]
+            isOneToOne: false
+            referencedRelation: "collectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
