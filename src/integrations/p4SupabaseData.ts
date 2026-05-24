@@ -206,17 +206,19 @@ export type DashboardLiveData = {
   topCollectors: TopCollector[];
 };
 
-function getMonthLabel(dateValue: unknown) {
+function getMonthInfo(dateValue: unknown) {
   const date =
     typeof dateValue === "string" || typeof dateValue === "number"
       ? new Date(dateValue)
       : null;
 
   if (!date || Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return { key: "0000-00", label: "Unknown" };
   }
 
-  return date.toLocaleString("en-US", { month: "short" });
+  const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+  const label = date.toLocaleString("en-US", { month: "short", year: "2-digit" });
+  return { key, label };
 }
 
 export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveData> {
@@ -307,14 +309,14 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
     existingCounty.collections += 1;
     countyMap.set(county, existingCounty);
 
-    const month = getMonthLabel(collection.confirmed_at);
-    const existingMonth = monthMap.get(month) ?? {
-      month,
+    const monthInfo = getMonthInfo(collection.confirmed_at);
+    const existingMonth = monthMap.get(monthInfo.key) ?? {
+      month: monthInfo.label,
       kgCollected: 0,
     };
 
     existingMonth.kgCollected += kg;
-    monthMap.set(month, existingMonth);
+    monthMap.set(monthInfo.key, existingMonth);
 
     const collectorId = toString(pickupRequest?.collector_id);
     const collector = collectorById.get(collectorId);
@@ -365,10 +367,12 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
       activeCollectors: collectors.length,
       co2AvoidedKg: Math.round(totalKgCollected * 2.5),
     },
-    countyStats: Array.from(countyMap.values()).sort(
-      (a, b) => b.kgCollected - a.kgCollected,
-    ),
-    monthlyTrend: Array.from(monthMap.values()),
+    countyStats: Array.from(countyMap.values())
+      .sort((a, b) => b.kgCollected - a.kgCollected)
+      .slice(0, 10),
+    monthlyTrend: Array.from(monthMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([, value]) => value),
     topCollectors,
   };
 }

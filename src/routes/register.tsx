@@ -48,7 +48,7 @@ function RegisterPage() {
         setError(profileErr instanceof Error ? profileErr.message : "Could not set up your profile.");
         return;
       }
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/" });
       return;
     }
     setInfo(t("auth.confirmEmail"));
