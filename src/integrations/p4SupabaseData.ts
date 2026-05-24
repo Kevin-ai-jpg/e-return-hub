@@ -309,14 +309,14 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
     existingCounty.collections += 1;
     countyMap.set(county, existingCounty);
 
-    const month = getMonthLabel(collection.confirmed_at);
-    const existingMonth = monthMap.get(month) ?? {
-      month,
+    const monthInfo = getMonthInfo(collection.confirmed_at);
+    const existingMonth = monthMap.get(monthInfo.key) ?? {
+      month: monthInfo.label,
       kgCollected: 0,
     };
 
     existingMonth.kgCollected += kg;
-    monthMap.set(month, existingMonth);
+    monthMap.set(monthInfo.key, existingMonth);
 
     const collectorId = toString(pickupRequest?.collector_id);
     const collector = collectorById.get(collectorId);
