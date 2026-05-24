@@ -206,17 +206,19 @@ export type DashboardLiveData = {
   topCollectors: TopCollector[];
 };
 
-function getMonthLabel(dateValue: unknown) {
+function getMonthInfo(dateValue: unknown) {
   const date =
     typeof dateValue === "string" || typeof dateValue === "number"
       ? new Date(dateValue)
       : null;
 
   if (!date || Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return { key: "0000-00", label: "Unknown" };
   }
 
-  return date.toLocaleString("en-US", { month: "short" });
+  const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+  const label = date.toLocaleString("en-US", { month: "short", year: "2-digit" });
+  return { key, label };
 }
 
 export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveData> {
