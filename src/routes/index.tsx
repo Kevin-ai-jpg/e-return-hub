@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Recycle, Coins, Shield, MapPin, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,8 +12,18 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const { t } = useTranslation();
   const [siteUrl, setSiteUrl] = useState("https://e-return.app");
+  const [CollectionMap, setCollectionMap] = useState<ComponentType<{
+    height?: string;
+  }> | null>(null);
   useEffect(() => {
     if (typeof window !== "undefined") setSiteUrl(window.location.origin);
+  }, []);
+  useEffect(() => {
+    let mounted = true;
+    import("@/integrations/CollectionMap")
+      .then((m) => { if (mounted) setCollectionMap(() => m.CollectionMap); })
+      .catch((e) => console.error("Failed to load map:", e));
+    return () => { mounted = false; };
   }, []);
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(siteUrl)}`;
   const { data: partners = [] } = useQuery({
@@ -97,12 +107,13 @@ function Landing() {
                 <p className="text-xs text-muted-foreground">{t("landing.map.desc")}</p>
               </div>
             </div>
-            <iframe
-              title="Romania collection points map"
-              className="block h-[360px] w-full border-0"
-              loading="lazy"
-              src="https://www.openstreetmap.org/export/embed.html?bbox=20.2%2C43.6%2C29.7%2C48.3&layer=mapnik"
-            />
+            {CollectionMap ? (
+              <CollectionMap height="360px" />
+            ) : (
+              <div className="flex h-[360px] w-full items-center justify-center text-sm text-muted-foreground">
+                Loading map…
+              </div>
+            )}
           </div>
           <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
             <div className="mb-3 flex items-center gap-2 text-primary">
