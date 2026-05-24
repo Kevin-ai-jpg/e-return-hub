@@ -47,10 +47,11 @@ function AccountPage() {
         .select("name, email, phone, county, address, email_campaigns, role, created_at")
         .eq("id", user.id)
         .maybeSingle();
+      const row = (data ?? {}) as Record<string, unknown>;
       setProfile({
         ...EMPTY,
-        ...(data ?? {}),
-        email: data?.email ?? user.email ?? "",
+        ...row,
+        email: (row.email as string | undefined) ?? user.email ?? "",
       });
       setLoading(false);
     })();
@@ -67,7 +68,7 @@ function AccountPage() {
         phone: profile.phone,
         county: profile.county,
         address: profile.address,
-      })
+      } as never)
       .eq("id", user.id);
     setSaving(false);
     if (error) toast.error("Could not save profile");

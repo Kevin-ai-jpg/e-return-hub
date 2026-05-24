@@ -18,7 +18,7 @@ export async function ensureUserProfile(user: User): Promise<void> {
     role: (meta.role as string | undefined) ?? "citizen",
     email: user.email ?? null,
     county: (meta.county as string | undefined) ?? null,
-  });
+  } as never);
 
   if (error?.code === "23505") return;
   if (error) throw error;
