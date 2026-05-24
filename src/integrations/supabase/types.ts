@@ -17,6 +17,7 @@ export type Database = {
       campaigns: {
         Row: {
           active: boolean | null
+          created_by: string | null
           description: string | null
           id: string
           region: string | null
@@ -24,6 +25,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
+          created_by?: string | null
           description?: string | null
           id?: string
           region?: string | null
@@ -31,12 +33,21 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
+          created_by?: string | null
           description?: string | null
           id?: string
           region?: string | null
           title?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       collection_points: {
         Row: {
