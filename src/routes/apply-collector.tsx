@@ -115,6 +115,7 @@ function ApplyCollectorPage() {
             <Field label={t("apply.contact")} value={form.contactPerson} onChange={update("contactPerson")} error={errors.contactPerson} maxLength={120} />
             <Field label={t("apply.email")} type="email" value={form.email} onChange={update("email")} error={errors.email} maxLength={255} />
             <Field label={t("apply.phone")} type="tel" value={form.phone} onChange={update("phone")} error={errors.phone} maxLength={32} />
+            <Field label="CUI" value={form.cui} onChange={update("cui")} error={errors.cui} maxLength={12} placeholder="12345678" />
             <div className="space-y-1.5">
               <Label htmlFor="counties">{t("apply.counties")}</Label>
               <Textarea id="counties" value={form.counties} onChange={update("counties")} placeholder="Cluj, Bucuresti, Timis" rows={3} maxLength={255} />
