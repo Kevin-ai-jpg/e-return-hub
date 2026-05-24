@@ -179,7 +179,7 @@ function Nav() {
               )}
               <button
                 type="button"
-                onClick={() => signOut()}
+                onClick={async () => { await signOut(); window.location.href = "/"; }}
                 className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary"
               >
                 {t("nav.logout")}
