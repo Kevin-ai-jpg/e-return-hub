@@ -372,9 +372,27 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
       activeCollectors: collectors.length,
       co2AvoidedKg: Math.round(totalKgCollected * 2.5),
     },
-    countyStats: Array.from(countyMap.values())
-      .sort((a, b) => b.kgCollected - a.kgCollected)
-      .slice(0, 10),
+    countyStats: (() => {
+      const viewRows = ((countyViewResult as { data?: DbRow[] | null }).data ?? []) as DbRow[];
+      if (viewRows.length > 0) {
+        const m = new Map<string, CountyStat>();
+        viewRows.forEach((r) => {
+          const county = toString(r.county) || "Unknown";
+          const kg = toNumber(r.kg_collected);
+          const existing = m.get(county) ?? { county, kgCollected: 0, collections: 0 };
+          existing.kgCollected += kg;
+          existing.collections += 1;
+          m.set(county, existing);
+        });
+        return Array.from(m.values())
+          .sort((a, b) => b.kgCollected - a.kgCollected)
+          .slice(0, 10);
+      }
+      return Array.from(countyMap.values())
+        .sort((a, b) => b.kgCollected - a.kgCollected)
+        .slice(0, 10);
+    })(),
+
     monthlyTrend: Array.from(monthMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([, value]) => value),
