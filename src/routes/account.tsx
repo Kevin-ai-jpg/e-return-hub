@@ -43,7 +43,7 @@ function AccountPage() {
     (async () => {
       const { data } = await supabase
         .from("users")
-        .select("name, email, phone, county, address, email_campaigns, role, created_at")
+        .select("name, email, phone, address, email_campaigns, role, created_at")
         .eq("id", user.id)
         .maybeSingle();
       const row = (data ?? {}) as Record<string, unknown>;
