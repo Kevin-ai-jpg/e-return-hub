@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const inputSchema = z.object({
   companyName: z.string().trim().min(2).max(120),
@@ -26,7 +25,7 @@ export const adminCreateCollector = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => inputSchema.parse(input))
   .handler(async ({ data, context }) => {
-    // Verify admin role
+    // Admin-only
     const { data: me, error: meErr } = await context.supabase
       .from("users")
       .select("role")
@@ -35,31 +34,26 @@ export const adminCreateCollector = createServerFn({ method: "POST" })
     if (meErr) throw new Error(meErr.message);
     if (me?.role !== "admin") throw new Error("Forbidden: admin role required");
 
-    const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
-    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-      throw new Error("Missing Supabase env vars");
-    }
-
     const password = generatePassword();
 
-    // Use anon client to sign up the new auth user (no service role needed)
-    const anon = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
-    });
-
-    const { data: signUp, error: signUpErr } = await anon.auth.signUp({
-      email: data.email,
-      password,
-      options: { data: { name: data.contactName, company_name: data.companyName } },
-    });
-    if (signUpErr || !signUp.user) {
-      throw new Error(signUpErr?.message ?? "Failed to create auth user");
+    // Create auth user with service role (no email confirmation needed)
+    const { data: created, error: createErr } =
+      await supabaseAdmin.auth.admin.createUser({
+        email: data.email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          name: data.contactName,
+          company_name: data.companyName,
+        },
+      });
+    if (createErr || !created.user) {
+      throw new Error(createErr?.message ?? "Failed to create auth user");
     }
-    const userId = signUp.user.id;
+    const userId = created.user.id;
 
-    // Insert profile row (admin RLS policy allows this)
-    const { error: userErr } = await context.supabase.from("users").upsert(
+    // Insert profile row
+    const { error: userErr } = await supabaseAdmin.from("users").upsert(
       {
         id: userId,
         email: data.email,
@@ -69,10 +63,13 @@ export const adminCreateCollector = createServerFn({ method: "POST" })
       },
       { onConflict: "id" },
     );
-    if (userErr) throw new Error(`Failed to create user profile: ${userErr.message}`);
+    if (userErr) {
+      await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => {});
+      throw new Error(`Failed to create user profile: ${userErr.message}`);
+    }
 
-    // Insert collector row (admin RLS policy allows this)
-    const { data: collector, error: collErr } = await context.supabase
+    // Insert collector row
+    const { data: collector, error: collErr } = await supabaseAdmin
       .from("collectors")
       .insert({
         user_id: userId,
@@ -82,7 +79,10 @@ export const adminCreateCollector = createServerFn({ method: "POST" })
       })
       .select()
       .single();
-    if (collErr) throw new Error(`Failed to create collector: ${collErr.message}`);
+    if (collErr) {
+      await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => {});
+      throw new Error(`Failed to create collector: ${collErr.message}`);
+    }
 
     return {
       collectorId: collector.id,
