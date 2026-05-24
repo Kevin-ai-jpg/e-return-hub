@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Database } from "@/integrations/supabase/types";
 
 const inputSchema = z.object({
   companyName: z.string().trim().min(2).max(120),
@@ -25,6 +26,12 @@ export const adminCreateCollector = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => inputSchema.parse(input))
   .handler(async ({ data, context }) => {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+    if (!supabaseUrl || !publishableKey) {
+      throw new Error("Missing Supabase server configuration");
+    }
+
     // Admin-only
     const { data: me, error: meErr } = await context.supabase
       .from("users")
@@ -35,16 +42,25 @@ export const adminCreateCollector = createServerFn({ method: "POST" })
     if (me?.role !== "admin") throw new Error("Forbidden: admin role required");
 
     const password = generatePassword();
+    const signupClient = createClient<Database>(supabaseUrl, publishableKey, {
+      auth: {
+        storage: undefined,
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
 
-    // Create auth user with service role (no email confirmation needed)
+    // Create auth user without relying on the service role key.
     const { data: created, error: createErr } =
-      await supabaseAdmin.auth.admin.createUser({
+      await signupClient.auth.signUp({
         email: data.email,
         password,
-        email_confirm: true,
-        user_metadata: {
-          name: data.contactName,
-          company_name: data.companyName,
+        options: {
+          data: {
+            name: data.contactName,
+            company_name: data.companyName,
+            role: "collector",
+          },
         },
       });
     if (createErr || !created.user) {
@@ -53,7 +69,7 @@ export const adminCreateCollector = createServerFn({ method: "POST" })
     const userId = created.user.id;
 
     // Insert profile row
-    const { error: userErr } = await supabaseAdmin.from("users").upsert(
+    const { error: userErr } = await context.supabase.from("users").upsert(
       {
         id: userId,
         email: data.email,
@@ -64,12 +80,11 @@ export const adminCreateCollector = createServerFn({ method: "POST" })
       { onConflict: "id" },
     );
     if (userErr) {
-      await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => {});
       throw new Error(`Failed to create user profile: ${userErr.message}`);
     }
 
     // Insert collector row
-    const { data: collector, error: collErr } = await supabaseAdmin
+    const { data: collector, error: collErr } = await context.supabase
       .from("collectors")
       .insert({
         user_id: userId,
@@ -80,7 +95,6 @@ export const adminCreateCollector = createServerFn({ method: "POST" })
       .select()
       .single();
     if (collErr) {
-      await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => {});
       throw new Error(`Failed to create collector: ${collErr.message}`);
     }
 
