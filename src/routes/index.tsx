@@ -107,12 +107,13 @@ function Landing() {
                 <p className="text-xs text-muted-foreground">{t("landing.map.desc")}</p>
               </div>
             </div>
-            <iframe
-              title="Romania collection points map"
-              className="block h-[360px] w-full border-0"
-              loading="lazy"
-              src="https://www.openstreetmap.org/export/embed.html?bbox=20.2%2C43.6%2C29.7%2C48.3&layer=mapnik"
-            />
+            {CollectionMap ? (
+              <CollectionMap height="360px" />
+            ) : (
+              <div className="flex h-[360px] w-full items-center justify-center text-sm text-muted-foreground">
+                Loading map…
+              </div>
+            )}
           </div>
           <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
             <div className="mb-3 flex items-center gap-2 text-primary">
