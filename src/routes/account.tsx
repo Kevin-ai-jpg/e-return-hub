@@ -16,7 +16,6 @@ type Profile = {
   name: string | null;
   email: string | null;
   phone: string | null;
-  county: string | null;
   address: string | null;
   email_campaigns: boolean | null;
   role: string | null;
@@ -24,7 +23,7 @@ type Profile = {
 };
 
 const EMPTY: Profile = {
-  name: "", email: "", phone: "", county: "", address: "",
+  name: "", email: "", phone: "", address: "",
   email_campaigns: true, role: "citizen", created_at: null,
 };
 
