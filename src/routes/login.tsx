@@ -44,7 +44,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (authLoading || roleLoading || !user) return;
-    navigate({ to: role === "admin" ? "/p4-dashboard" : "/dashboard" });
+    navigate({ to: "/" });
   }, [authLoading, roleLoading, user, role, navigate]);
 
   useEffect(() => {
