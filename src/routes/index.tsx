@@ -12,8 +12,18 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const { t } = useTranslation();
   const [siteUrl, setSiteUrl] = useState("https://e-return.app");
+  const [CollectionMap, setCollectionMap] = useState<ComponentType<{
+    height?: string;
+  }> | null>(null);
   useEffect(() => {
     if (typeof window !== "undefined") setSiteUrl(window.location.origin);
+  }, []);
+  useEffect(() => {
+    let mounted = true;
+    import("@/integrations/CollectionMap")
+      .then((m) => { if (mounted) setCollectionMap(() => m.CollectionMap); })
+      .catch((e) => console.error("Failed to load map:", e));
+    return () => { mounted = false; };
   }, []);
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(siteUrl)}`;
   const { data: partners = [] } = useQuery({
