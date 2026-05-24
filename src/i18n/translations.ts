@@ -92,6 +92,7 @@ export const translations: Record<Lang, Dict> = {
     "dash.noActivity": "No activity yet",
     "dash.noActivityHint": "Start your first pickup to see it here.",
     "dash.loading": "Loading…",
+    "dash.pickupQrCodes": "Confirmed pickup QR codes",
 
     // Pickup new
     "pickup.back": "Back to dashboard",
@@ -368,6 +369,7 @@ export const translations: Record<Lang, Dict> = {
     "dash.noActivity": "Nicio activitate încă",
     "dash.noActivityHint": "Pornește prima ridicare pentru a o vedea aici.",
     "dash.loading": "Se încarcă…",
+    "dash.pickupQrCodes": "Coduri QR pentru ridicări programate",
 
     // Pickup new
     "pickup.back": "Înapoi la panou",

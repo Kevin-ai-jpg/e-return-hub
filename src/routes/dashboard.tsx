@@ -146,20 +146,19 @@ function Dashboard() {
     queryFn: loadSummary,
   });
 
-  const { data: nextPickup } = useQuery({
-    queryKey: ["next-accepted-pickup"],
+  const { data: scheduledPickups = [] } = useQuery({
+    queryKey: ["accepted-pickups"],
     queryFn: async () => {
       const { data: u } = await supabase.auth.getUser();
-      if (!u.user?.id) return null;
-      const { data } = await supabase
+      if (!u.user?.id) return [];
+      const { data, error } = await supabase
         .from("pickup_requests")
-        .select("id, deee_type, status, collector_id, collectors(company_name)")
+        .select("id, deee_type, status, scheduled_date, collector_id, collectors(company_name)")
         .eq("user_id", u.user.id)
         .eq("status", "accepted")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
+        .order("scheduled_date", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
@@ -251,14 +250,20 @@ function Dashboard() {
         )}
       </section>
 
-      {nextPickup && PickupQRCode && (
+      {scheduledPickups.length > 0 && PickupQRCode && (
         <section className="mt-8">
-          <PickupQRCode
-            pickupRequestId={nextPickup.id}
-            collectorName={(nextPickup as { collectors?: { company_name?: string } }).collectors?.company_name ?? "Collector"}
-            deeeType={nextPickup.deee_type ?? "DEEE"}
-            status={nextPickup.status ?? "accepted"}
-          />
+          <h2 className="mb-4 text-lg font-semibold text-foreground">{t("dash.pickupQrCodes")}</h2>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {scheduledPickups.map((pickup) => (
+              <PickupQRCode
+                key={pickup.id}
+                pickupRequestId={pickup.id}
+                collectorName={(pickup as { collectors?: { company_name?: string } }).collectors?.company_name ?? "Collector"}
+                deeeType={pickup.deee_type ?? "DEEE"}
+                status={pickup.status ?? "accepted"}
+              />
+            ))}
+          </div>
         </section>
       )}
     </main>
