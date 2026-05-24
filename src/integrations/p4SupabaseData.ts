@@ -367,10 +367,12 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
       activeCollectors: collectors.length,
       co2AvoidedKg: Math.round(totalKgCollected * 2.5),
     },
-    countyStats: Array.from(countyMap.values()).sort(
-      (a, b) => b.kgCollected - a.kgCollected,
-    ),
-    monthlyTrend: Array.from(monthMap.values()),
+    countyStats: Array.from(countyMap.values())
+      .sort((a, b) => b.kgCollected - a.kgCollected)
+      .slice(0, 10),
+    monthlyTrend: Array.from(monthMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([, value]) => value),
     topCollectors,
   };
 }
