@@ -38,9 +38,14 @@ const schema = z.object({
     .max(32)
     .regex(/^[\d\s+()-]+$/, "Invalid phone"),
   counties: z.string().trim().min(2).max(255),
+  cui: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/^RO/i, "").trim())
+    .pipe(z.string().regex(/^\d{2,10}$/, "CUI must be digits only (no RO prefix)")),
 });
 
-const empty = { companyName: "", contactPerson: "", email: "", phone: "", counties: "" };
+const empty = { companyName: "", contactPerson: "", email: "", phone: "", counties: "", cui: "" };
 
 function ApplyCollectorPage() {
   const { t } = useTranslation();
