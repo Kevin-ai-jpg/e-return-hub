@@ -264,7 +264,7 @@ export async function fetchDashboardDataFromSupabase(): Promise<DashboardLiveDat
   const pickupRequests = (pickupRequestsResult.data ?? []) as DbRow[];
   const vouchers = (vouchersResult.data ?? []) as DbRow[];
   const collectors = (collectorsResult.data ?? []) as DbRow[];
-  const users = (usersResult.data ?? []) as DbRow[];
+  const users = (usersResult.data ?? []) as unknown as DbRow[];
 
   const userCountyById = new Map<string, string>();
   users.forEach((u) => {
