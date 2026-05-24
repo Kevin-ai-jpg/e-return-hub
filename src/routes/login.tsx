@@ -44,7 +44,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (authLoading || roleLoading || !user) return;
-    navigate({ to: "/" });
+    navigate({ to: role === "admin" ? "/p4-dashboard" : "/" });
   }, [authLoading, roleLoading, user, role, navigate]);
 
   useEffect(() => {
@@ -99,7 +99,16 @@ function LoginPage() {
     setLoading(false);
     submittingRef.current = false;
 
-    navigate({ to: "/" });
+    let isAdmin = false;
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      isAdmin = profile?.role === "admin";
+    }
+    navigate({ to: isAdmin ? "/p4-dashboard" : "/" });
   };
 
   const isLocked = lockedUntil > Date.now();
