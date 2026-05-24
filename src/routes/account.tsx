@@ -16,7 +16,6 @@ type Profile = {
   name: string | null;
   email: string | null;
   phone: string | null;
-  county: string | null;
   address: string | null;
   email_campaigns: boolean | null;
   role: string | null;
@@ -24,7 +23,7 @@ type Profile = {
 };
 
 const EMPTY: Profile = {
-  name: "", email: "", phone: "", county: "", address: "",
+  name: "", email: "", phone: "", address: "",
   email_campaigns: true, role: "citizen", created_at: null,
 };
 
@@ -44,7 +43,7 @@ function AccountPage() {
     (async () => {
       const { data } = await supabase
         .from("users")
-        .select("name, email, phone, county, address, email_campaigns, role, created_at")
+        .select("name, email, phone, address, email_campaigns, role, created_at")
         .eq("id", user.id)
         .maybeSingle();
       const row = (data ?? {}) as Record<string, unknown>;
@@ -66,7 +65,6 @@ function AccountPage() {
       .update({
         name: profile.name,
         phone: profile.phone,
-        county: profile.county,
         address: profile.address,
       } as never)
       .eq("id", user.id);
@@ -142,16 +140,6 @@ function AccountPage() {
               value={profile.phone ?? ""}
               onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
               placeholder="+40 7xx xxx xxx"
-              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-          <div>
-            <Label htmlFor="county">County</Label>
-            <input
-              id="county"
-              value={profile.county ?? ""}
-              onChange={(e) => setProfile({ ...profile, county: e.target.value })}
-              placeholder="Cluj"
               className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
