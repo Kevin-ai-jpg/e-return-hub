@@ -10,7 +10,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Award, BarChart3, Building2, Leaf, Loader2, Map, Recycle, Ticket, Truck } from "lucide-react";
+import { Award, BarChart3, Building2, Leaf, Loader2, Map, Recycle, Ticket, Truck, UserPlus } from "lucide-react";
+import { AddCollectorSection } from "./AddCollectorSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CollectionMap } from "./CollectionMap";
 import {
@@ -163,6 +164,10 @@ export function AdminDashboard() {
           <TabsTrigger value="map">
             <Map className="mr-1.5 h-4 w-4" />
             Collection Map
+          </TabsTrigger>
+          <TabsTrigger value="add-collector">
+            <UserPlus className="mr-1.5 h-4 w-4" />
+            Add Collector
           </TabsTrigger>
         </TabsList>
 
@@ -336,6 +341,10 @@ export function AdminDashboard() {
 
         <TabsContent value="map" className="pt-2">
           <CollectionMap height="560px" useSupabaseData />
+        </TabsContent>
+
+        <TabsContent value="add-collector" className="pt-2">
+          <AddCollectorSection />
         </TabsContent>
       </Tabs>
     </section>
